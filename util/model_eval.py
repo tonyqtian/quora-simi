@@ -45,11 +45,11 @@ class Evaluator(Callback):
 			self.test_precisions.append(precision)
 			
 			self.print_pred(self.test_x[:self.evl_pred], preds[:self.evl_pred], self.test_y[:self.evl_pred])
-			self.print_info(epoch, precision)
+			self.print_info(epoch, precision, self.test_loss, self.test_metric)
 			
 			if self.save_model:
-				if precision > self.best_score:
-					self.best_score = precision
+				if self.test_loss > self.best_score:
+					self.best_score = self.test_loss
 					self.best_epoch = epoch
 					self.model.save_weights(self.out_dir + '/' + self.timestr + 'best_model_weights.h5', overwrite=True)
 				self.print_best()
@@ -97,9 +97,8 @@ class Evaluator(Callback):
 			logger.info('[Test]  Line: %s  v.s %s ' % (' '.join(infr_line1), ' '.join(infr_line2)))
 			logger.info('[Test]  True: %d  Pred %d ' % (pred, real) )
 							
-	def print_info(self, epoch, precision):
-		logger.info('[Test]  Epoch: %i' % epoch)
-		logger.info('[Test]  Precision: %.4f' % precision )
+	def print_info(self, epoch, precision, logloss, mse):
+		logger.info('[Test]  Epoch: %i  Precision: %.4f  Log Loss %.4f  MSE %.4f' % (epoch, precision, logloss, mse))
 
 	def print_best(self):
-		logger.info('[Test]  Best @ Epoch %i: Score: %.4f' % (self.best_epoch, self.best_score))
+		logger.info('[Test]  Best @ Epoch %i: Log Loss: %.4f' % (self.best_epoch, self.best_score))
