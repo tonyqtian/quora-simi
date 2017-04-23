@@ -45,6 +45,7 @@ parser.add_argument("--bi-directional", dest="bidirectional", action='store_true
 parser.add_argument("--load-model-json", dest="load_model_json", type=str, metavar='<str>', default=None, help="(Optional) Path to the existing model json")
 parser.add_argument("--load-model-weights", dest="load_model_weights", type=str, metavar='<str>', default=None, help="(Optional) Path to the existing model weights")
 parser.add_argument("--load-vocab-from-file", dest="load_vocab_from_file", type=str, metavar='<str>', default=None, help="(Optional) Path to the existing vocab file")
+parser.add_argument("--raw-material", dest="rawMaterial", action='store_true', help="Use Raw Material")
 args = parser.parse_args()
 
 from src.processing import train

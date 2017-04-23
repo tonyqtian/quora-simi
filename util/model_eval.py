@@ -76,7 +76,8 @@ class Evaluator(Callback):
 		plt.close()
 		plt.plot(training_epochs, self.test_losses, 'k', label='Test Loss')
 		plt.plot(training_epochs, self.test_accs, 'c.', label='Test Metric')
-		plt.plot(training_epochs, self.test_precisions, 'g.', label='Test Precision')
+		if self.evl_pred:
+			plt.plot(training_epochs, self.test_precisions, 'g.', label='Test Precision')
 		plt.legend()
 		plt.xlabel('epochs')
 		plt.savefig(self.out_dir + '/' + self.timestr + 'TestScore.png')
