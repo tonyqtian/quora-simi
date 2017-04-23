@@ -10,7 +10,7 @@ from keras.layers.recurrent import LSTM
 from keras.layers.core import Activation, Dropout
 from keras.layers.wrappers import Bidirectional
 from keras.engine.topology import Input, merge
-from keras.engine.training import Model
+from keras.models import Model
 
 from util.attention_wrapper import Attention
 from util.my_layers import DenseWithMasking
@@ -33,7 +33,7 @@ def getModel(args, input_length, vocab_size, embd, embd_trainable=True):
 		rnn_model.add(Embedding(vocab_size, embd_dim, mask_zero=True, trainable=embd_trainable))
 	else:
 		rnn_model.add(Embedding(vocab_size, embd_dim, mask_zero=True, weights=[embd], trainable=embd_trainable))
-	
+	# hidden rnn layer
 	for _ in range(args.rnn_layer-1):
 		if args.bidirectional:
 			rnn_model.add(Bidirectional(LSTM(rnn_dim, return_sequences=True, consume_less=rnn_opt,
@@ -42,6 +42,7 @@ def getModel(args, input_length, vocab_size, embd, embd_trainable=True):
 			rnn_model.add(LSTM(rnn_dim, return_sequences=True, consume_less=rnn_opt,
 						 dropout_W=dropout_W, dropout_U=dropout_U))
 		rnn_model.add(Dropout(args.dropout_prob))
+	# output rnn layer	
 	if args.attention:			
 		rnn_model.add(Attention(LSTM(rnn_dim, return_sequences=False, consume_less=rnn_opt,
 								 dropout_W=dropout_W, dropout_U=dropout_U)))
@@ -61,8 +62,7 @@ def getModel(args, input_length, vocab_size, embd, embd_trainable=True):
 
 	merged = merge([vec1, vec2], mode='concat')
 	merged = Dropout(args.dropout_prob)(merged)
-# 	merged = BatchNormalization()(merged)
-	
+# 	merged = BatchNormalization()(merged)	
 # 	merged = Dense(num_dense, activation=act)(merged)
 # 	merged = Dropout(rate_drop_dense)(merged)
 # 	merged = BatchNormalization()(merged)
@@ -70,5 +70,5 @@ def getModel(args, input_length, vocab_size, embd, embd_trainable=True):
 	merged = DenseWithMasking(1, init=final_init)(merged)
 	preds = Activation(args.activation)(merged)
 
-	model = Model(inputs=[sequence_1_input, sequence_2_input], outputs=preds)
+	model = Model(input=[sequence_1_input, sequence_2_input], output=preds)
 	return model

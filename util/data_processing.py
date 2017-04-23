@@ -162,3 +162,15 @@ def prob_top_n(y, top=5):
 				idx_pos.append(idx)
 		y_ary.append(idx_pos)
 	return y_ary
+
+def w2vEmbdReader(embd_path, reVocab, embd_dim):
+	embd_matrix = np.zeros( (len(reVocab), embd_dim) )
+	with open(embd_path, 'r', encoding='utf8') as fhd:
+		idx = 1 # let 1st padding line all zeros
+		for line in tqdm(fhd):
+			elem = line.strip().split(' ')
+			assert len(elem) == embd_dim + 1, 'Incorrect Embedding Dimension, expect %d but got %d ' % (embd_dim, len(elem)-1)
+			w2vec = np.array(elem[1:])
+			embd_matrix[idx] = w2vec
+			idx += 1
+	return embd_matrix
