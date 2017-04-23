@@ -69,7 +69,7 @@ def tokenizeIt(table, clean=False):
 			if len(text) > maxLen:
 				maxLen = len(text)
 		else:
-			text = text.split(' ')
+			text = str(text).split(' ')
 			tokenizedTable.append(text)
 			if len(text) > maxLen:
 				maxLen = len(text)
