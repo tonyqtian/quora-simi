@@ -175,6 +175,8 @@ def prob_top_n(y, top=5):
 	return y_ary
 
 def w2vEmbdReader(embd_path, reVocab, embd_dim):
+	logger.info('  getting pre-trained embedding from file... ')
+	logger.info('  embedding length: %i  dim: %i  ' % (len(reVocab), embd_dim))
 	embd_matrix = np.zeros( (len(reVocab), embd_dim) )
 	with open(embd_path, 'r', encoding='utf8') as fhd:
 		idx = 1 # let 1st padding line all zeros
