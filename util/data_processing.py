@@ -60,15 +60,15 @@ def get_pdTable(path, notag=False):
 def tokenizeIt(table, clean=False):
 	tokenizedTable = []
 	maxLen = 0
-	for content in tqdm(table, file=sys.stdout):
+	for text in tqdm(table, file=sys.stdout):
 		if clean:
-# 			text = stripTagsAndUris(content)
+# 			text = stripTagsAndUris(text)
 			text = get_words(text)
 			tokenizedTable.append(text)
 			if len(text) > maxLen:
 				maxLen = len(text)
 		else:
-			text = content.split(' ')
+			text = text.split(' ')
 			tokenizedTable.append(text)
 			if len(text) > maxLen:
 				maxLen = len(text)
