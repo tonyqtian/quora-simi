@@ -30,7 +30,8 @@ def train(args):
 	train_question2, train_maxLen2 = tokenizeIt(train_question2)
 	test_question1, test_maxLen1 = tokenizeIt(test_question1)
 	test_question2, test_maxLen2 = tokenizeIt(test_question2)
-	inputLength = max(train_maxLen1, train_maxLen2, test_maxLen1, test_maxLen2)
+# 	inputLength = max(train_maxLen1, train_maxLen2, test_maxLen1, test_maxLen2)
+	inputLength = 32
 	
 	if args.load_vocab_from_file:
 		with open(args.load_vocab_from_file, 'rb') as vocab_file:
