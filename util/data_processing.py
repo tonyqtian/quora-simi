@@ -36,6 +36,16 @@ def stripTagsAndUris(x):
 def get_words(text):
 # 	word_split = re.compile('[^a-zA-Z0-9_\\+\\-]')
 # 	return [word.strip().lower() for word in word_split.split(text)]
+	text = text.replace('’s', ' ’s')
+	text = text.replace('…', ' ')
+	text = text.replace('”', ' ')
+	text = text.replace('“', ' ')
+	text = text.replace('‘', ' ')
+	text = text.replace('’', ' ')
+	text = text.replace('"', ' ')
+	text = text.replace("'", " ")
+	text = text.replace('-', ' ')
+	text = text.replace('/', ' ')
 	text = text.replace("\\", " ")
 	return word_tokenize(text)
 	
@@ -52,7 +62,7 @@ def tokenizeIt(table, clean=False):
 	maxLen = 0
 	for content in tqdm(table, file=sys.stdout):
 		if clean:
-			text = stripTagsAndUris(content)
+# 			text = stripTagsAndUris(content)
 			text = get_words(text)
 			tokenizedTable.append(text)
 			if len(text) > maxLen:

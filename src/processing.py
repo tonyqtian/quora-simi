@@ -26,10 +26,10 @@ def train(args):
 	_, train_question1, train_question2, train_y = get_pdTable(args.train_path)
 	_, test_question1, test_question2, test_y = get_pdTable(args.test_path)
 	
-	train_question1, train_maxLen1 = tokenizeIt(train_question1)
-	train_question2, train_maxLen2 = tokenizeIt(train_question2)
-	test_question1, test_maxLen1 = tokenizeIt(test_question1)
-	test_question2, test_maxLen2 = tokenizeIt(test_question2)
+	train_question1, train_maxLen1 = tokenizeIt(train_question1, clean=True)
+	train_question2, train_maxLen2 = tokenizeIt(train_question2, clean=True)
+	test_question1, test_maxLen1 = tokenizeIt(test_question1, clean=True)
+	test_question2, test_maxLen2 = tokenizeIt(test_question2, clean=True)
 # 	inputLength = max(train_maxLen1, train_maxLen2, test_maxLen1, test_maxLen2)
 	inputLength = 32
 	
