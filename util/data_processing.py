@@ -36,6 +36,7 @@ def stripTagsAndUris(x):
 def get_words(text):
 # 	word_split = re.compile('[^a-zA-Z0-9_\\+\\-]')
 # 	return [word.strip().lower() for word in word_split.split(text)]
+	text = str(text)
 	text = text.replace('’s', ' ’s')
 	text = text.replace('…', ' ')
 	text = text.replace('”', ' ')
