@@ -14,6 +14,7 @@ package_group(
 py_library(
     name = "data_utils",
     srcs = ["data_utils.py"],
+    srcs_version = "PY3",
 )
 
 py_binary(
@@ -24,4 +25,5 @@ py_binary(
     deps = [
         ":data_utils",
     ],
+    srcs_version = "PY3",
 )
