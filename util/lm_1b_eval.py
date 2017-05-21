@@ -86,7 +86,7 @@ def _LoadModel(gd_file, ckpt_file):
 	with tf.Graph().as_default():
 		sys.stderr.write('Recovering graph.\n')
 		with tf.gfile.FastGFile(gd_file, 'r') as f:
-			s = f.read().decode()
+			s = f.read()
 			gd = tf.GraphDef()
 			text_format.Merge(s, gd)
 
