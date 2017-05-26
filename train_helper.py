@@ -46,10 +46,21 @@ parser.add_argument("--load-model-json", dest="load_model_json", type=str, metav
 parser.add_argument("--load-model-weights", dest="load_model_weights", type=str, metavar='<str>', default=None, help="(Optional) Path to the existing model weights")
 parser.add_argument("--load-vocab-from-file", dest="load_vocab_from_file", type=str, metavar='<str>', default=None, help="(Optional) Path to the existing vocab file")
 parser.add_argument("--raw-material", dest="rawMaterial", action='store_true', help="Use Raw Material")
+
+parser.add_argument("--vec-inference", dest="vecInf", action='store_true', help="Inference Mode for vector generation")
+parser.add_argument("--vocab_file", dest="vocab_file", type=str, metavar='<str>', default=None, help="Path to the vocab file")
+parser.add_argument("--pbtxt", dest="pbtxt", type=str, metavar='<str>', default=None, help="Path to pb text file")
+parser.add_argument("--ckpt", dest="ckpt", type=str, metavar='<str>', default=None, help="Path to check point file")
+parser.add_argument("--save_dir", dest="save_dir", type=str, metavar='<str>', default=None, help="Path to saving dump file path")
+
 args = parser.parse_args()
 
-from src.processing import train
-train(args)
+if args.vecinf:
+	from src.processing import inference
+	inference(args)
+else:
+	from src.processing import train
+	train(args)
 
 print('\a')
 sleep(0.3)

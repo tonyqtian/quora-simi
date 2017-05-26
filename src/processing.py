@@ -87,8 +87,8 @@ def train(args):
 	if args.save_model:
 		## Plotting model
 		logger.info('Plotting model architecture')
-		from keras.utils.visualize_util import plot	
-		plot(rnnmodel, to_file = output_dir + '/' + timestr + 'model_plot.png')
+		from keras.utils import plot_model
+		plot_model(rnnmodel, to_file = output_dir + '/' + timestr + 'model_plot.png')
 		logger.info('  Done')
 		
 		## Save model architecture
@@ -111,3 +111,67 @@ def train(args):
 	
 	# test output (remove duplicate, remove <pad> <unk>, comparable layout, into csv)
 	# final inference: output(remove duplicate, remove <pad> <unk>, limit output words to 3 or 2 or 1..., into csv)
+	
+def inference(args):
+	
+	timestr = time.strftime("%Y%m%d-%H%M%S-")
+	output_dir = args.out_dir_path + '/' + time.strftime("%m%d")
+	mkdir(output_dir)
+	setLogger(timestr, out_dir=output_dir)
+	print_args(args)
+	
+	# process train and test data
+	_, train_question1, train_question2, train_y = get_pdTable(args.train_path)
+	_, test_question1, test_question2, test_y = get_pdTable(args.test_path)
+	
+	train_question1, train_maxLen1 = tokenizeIt(train_question1, clean=args.rawMaterial, addHead='<s>')
+	train_question2, train_maxLen2 = tokenizeIt(train_question2, clean=args.rawMaterial, addHead='<s>')
+	test_question1, test_maxLen1 = tokenizeIt(test_question1, clean=args.rawMaterial, addHead='<s>')
+	test_question2, test_maxLen2 = tokenizeIt(test_question2, clean=args.rawMaterial, addHead='<s>')
+	inputLength = max(train_maxLen1, train_maxLen2, test_maxLen1, test_maxLen2)
+	print('Max input length: ', inputLength)
+	inputLength = 32
+	print('Reset max length to 32')
+
+	BATCH_SIZE = args.train_batch_size
+	NUM_TIMESTEPS = inputLength
+	MAX_WORD_LEN = 50
+	
+	import tensorflow as tf
+	import numpy as np
+	
+	from util import data_utils
+	vocab = data_utils.CharsVocabulary(args.vocab_file, MAX_WORD_LEN)
+	
+	targets = np.zeros([BATCH_SIZE, NUM_TIMESTEPS], np.int32)
+	weights = np.ones([BATCH_SIZE, NUM_TIMESTEPS], np.float32)
+
+	from util.lm_1b_eval import _LoadModel
+	sess, t = _LoadModel(args.pbtxt, args.ckpt)
+
+# 	if sentence.find('<S>') != 0:
+# 		sentence = '<S> ' + sentence
+
+	word_ids = [vocab.word_to_id(w) for w in sentence.split()]
+	char_ids = [vocab.word_to_char_ids(w) for w in sentence.split()]
+
+	inputs = np.zeros([BATCH_SIZE, NUM_TIMESTEPS], np.int32)
+	char_ids_inputs = np.zeros([BATCH_SIZE, NUM_TIMESTEPS, vocab.max_word_length], np.int32)
+	for i in range(len(word_ids)):
+		inputs[0, 0] = word_ids[i]
+		char_ids_inputs[0, 0, :] = char_ids[i]
+
+		# Add 'lstm/lstm_0/control_dependency' if you want to dump previous layer
+		# LSTM.
+		lstm_emb = sess.run(t['lstm/lstm_1/control_dependency'],
+							feed_dict={t['char_inputs_in']: char_ids_inputs,
+										t['inputs_in']: inputs,
+										t['targets_in']: targets,
+										t['target_weights_in']: weights})
+
+	from os.path import join
+	fname = join(args.save_dir, 'lstm_emb_step_%d.npy' % i)
+	with tf.gfile.Open(fname, mode='w') as f:
+		np.save(f, lstm_emb)
+	print('LSTM embedding step %d file saved\n' % i)
+	

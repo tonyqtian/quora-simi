@@ -90,3 +90,5 @@ ENV/
 /data/
 /output/
 /test/
+/.pydevproject
+/.project

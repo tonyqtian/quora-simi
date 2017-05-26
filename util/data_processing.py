@@ -58,18 +58,22 @@ def get_pdTable(path, notag=False):
 	else:
 		return pdtable.id, pdtable.question1, pdtable.question2, pdtable.is_duplicate
 
-def tokenizeIt(table, clean=False):
+def tokenizeIt(table, clean=False, addHead=None):
 	tokenizedTable = []
 	maxLen = 0
 	for text in tqdm(table, file=sys.stdout):
 		if clean:
 # 			text = stripTagsAndUris(text)
 			text = get_words(text)
+			if not type(addHead) == type(None):
+				text = [addHead] + text
 			tokenizedTable.append(text)
 			if len(text) > maxLen:
 				maxLen = len(text)
 		else:
 			text = str(text).split(' ')
+			if not type(addHead) == type(None):
+				text = [addHead] + text
 			tokenizedTable.append(text)
 			if len(text) > maxLen:
 				maxLen = len(text)
