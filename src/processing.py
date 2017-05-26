@@ -105,7 +105,7 @@ def train(args):
 	if args.earlystop:
 		earlystop = EarlyStopping(patience = args.earlystop, verbose=1, mode='auto')
 		myCallbacks.append(earlystop)
-	rnnmodel.fit([train_x1, train_x2], train_y, validation_split=args.valid_split, batch_size=args.train_batch_size, nb_epoch=args.epochs, callbacks=myCallbacks)
+	rnnmodel.fit([train_x1, train_x2], train_y, validation_split=args.valid_split, batch_size=args.train_batch_size, epochs=args.epochs, callbacks=myCallbacks)
 	if not args.eval_on_epoch:
 		rnnmodel.evaluate([test_x1, test_x2], test_y, batch_size=args.eval_batch_size)
 	

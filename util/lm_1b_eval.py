@@ -25,7 +25,7 @@ import numpy as np
 import tensorflow as tf
 
 from google.protobuf import text_format
-import data_utils
+from . import data_utils
 
 FLAGS = tf.flags.FLAGS
 # General flags.
