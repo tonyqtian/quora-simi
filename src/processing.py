@@ -30,8 +30,10 @@ def train(args):
 	train_question2, train_maxLen2 = tokenizeIt(train_question2, clean=args.rawMaterial)
 	test_question1, test_maxLen1 = tokenizeIt(test_question1, clean=args.rawMaterial)
 	test_question2, test_maxLen2 = tokenizeIt(test_question2, clean=args.rawMaterial)
-# 	inputLength = max(train_maxLen1, train_maxLen2, test_maxLen1, test_maxLen2)
+	inputLength = max(train_maxLen1, train_maxLen2, test_maxLen1, test_maxLen2)
+	print('Max input length: ', inputLength)
 	inputLength = 32
+	print('Reset max length to 32')
 		
 	if args.load_vocab_from_file:
 		with open(args.load_vocab_from_file, 'rb') as vocab_file:
@@ -112,6 +114,7 @@ def train(args):
 	# test output (remove duplicate, remove <pad> <unk>, comparable layout, into csv)
 	# final inference: output(remove duplicate, remove <pad> <unk>, limit output words to 3 or 2 or 1..., into csv)
 	
+	
 def inference(args):
 	
 	timestr = time.strftime("%Y%m%d-%H%M%S-")
@@ -133,45 +136,22 @@ def inference(args):
 	inputLength = 32
 	print('Reset max length to 32')
 
-	BATCH_SIZE = args.train_batch_size
-	NUM_TIMESTEPS = inputLength
-	MAX_WORD_LEN = 50
-	
-	import tensorflow as tf
-	import numpy as np
-	
-	from util import data_utils
-	vocab = data_utils.CharsVocabulary(args.vocab_file, MAX_WORD_LEN)
-	
-	targets = np.zeros([BATCH_SIZE, NUM_TIMESTEPS], np.int32)
-	weights = np.ones([BATCH_SIZE, NUM_TIMESTEPS], np.float32)
-
-	from util.lm_1b_eval import _LoadModel
-	sess, t = _LoadModel(args.pbtxt, args.ckpt)
-
-# 	if sentence.find('<S>') != 0:
-# 		sentence = '<S> ' + sentence
-
-	word_ids = [vocab.word_to_id(w) for w in sentence.split()]
-	char_ids = [vocab.word_to_char_ids(w) for w in sentence.split()]
-
-	inputs = np.zeros([BATCH_SIZE, NUM_TIMESTEPS], np.int32)
-	char_ids_inputs = np.zeros([BATCH_SIZE, NUM_TIMESTEPS, vocab.max_word_length], np.int32)
-	for i in range(len(word_ids)):
-		inputs[0, 0] = word_ids[i]
-		char_ids_inputs[0, 0, :] = char_ids[i]
-
-		# Add 'lstm/lstm_0/control_dependency' if you want to dump previous layer
-		# LSTM.
-		lstm_emb = sess.run(t['lstm/lstm_1/control_dependency'],
-							feed_dict={t['char_inputs_in']: char_ids_inputs,
-										t['inputs_in']: inputs,
-										t['targets_in']: targets,
-										t['target_weights_in']: weights})
+	from lm_1b_model import lm_1b_infer
+	train_question1_vec = lm_1b_infer(args, inputLength, train_question1)
+	train_question2_vec = lm_1b_infer(args, inputLength, train_question2)
 
 	from os.path import join
-	fname = join(args.save_dir, 'lstm_emb_step_%d.npy' % i)
-	with tf.gfile.Open(fname, mode='w') as f:
-		np.save(f, lstm_emb)
-	print('LSTM embedding step %d file saved\n' % i)
+	from tensorflow import gfile
+	from numpy import save
+	fname = join(output_dir, 'train_lstm_vec.npy')
+	with gfile.Open(fname, mode='w') as f:
+		save(f, [train_question1_vec, train_question2_vec, train_y])
+	print('Training LSTM embedding file saved.')
+	
+	test_question1_vec = lm_1b_infer(args, inputLength, test_question1)
+	test_question2_vec = lm_1b_infer(args, inputLength, test_question2)
+	fname = join(output_dir, 'test_lstm_vec.npy')
+	with gfile.Open(fname, mode='w') as f:
+		save(f, [test_question1_vec, test_question2_vec, test_y])
+	print('Training LSTM embedding file saved.')
 	
