@@ -8,9 +8,7 @@ matplotlib.use('Agg')
 
 import logging, time
 import pickle as pkl
-from keras.callbacks import EarlyStopping
 from util.utils import setLogger, mkdir, print_args
-from util.model_eval import Evaluator
 from util.data_processing import get_pdTable, tokenizeIt, createVocab, word2num, w2vEmbdReader
 
 logger = logging.getLogger(__name__)
@@ -102,9 +100,11 @@ def train(args):
 	# train and test model
 	myCallbacks = []
 	if args.eval_on_epoch:
+		from util.model_eval import Evaluator
 		evl = Evaluator(args, output_dir, timestr, myMetrics, [test_x1, test_x2], test_y, vocabReverseDict)
 		myCallbacks.append(evl)
 	if args.earlystop:
+		from keras.callbacks import EarlyStopping
 		earlystop = EarlyStopping(patience = args.earlystop, verbose=1, mode='auto')
 		myCallbacks.append(earlystop)
 	rnnmodel.fit([train_x1, train_x2], train_y, validation_split=args.valid_split, batch_size=args.train_batch_size, epochs=args.epochs, callbacks=myCallbacks)
@@ -133,25 +133,25 @@ def inference(args):
 	test_question2, test_maxLen2 = tokenizeIt(test_question2, clean=args.rawMaterial, addHead='<s>')
 	inputLength = max(train_maxLen1, train_maxLen2, test_maxLen1, test_maxLen2)
 	print('Max input length: ', inputLength)
-	inputLength = 32
-	print('Reset max length to 32')
+	inputLength = 50
+	print('Reset max length to %d' % inputLength)
 
 	from lm_1b_model import lm_1b_infer
 	train_question1_vec = lm_1b_infer(args, inputLength, train_question1)
+	print('Train Q1 shape: ', train_question1_vec.shape)
 	train_question2_vec = lm_1b_infer(args, inputLength, train_question2)
-
-	from os.path import join
-	from tensorflow import gfile
-	from numpy import save
-	fname = join(output_dir, 'train_lstm_vec.npy')
-	with gfile.Open(fname, mode='w') as f:
-		save(f, [train_question1_vec, train_question2_vec, train_y])
-	print('Training LSTM embedding file saved.')
+	print('Train Q2 shape: ', train_question2_vec.shape)
+	
+	with open(output_dir + '/' + timestr + 'train_lstm_vec.pkl', 'wb') as f:
+		pkl.dump( (train_question1_vec, train_question2_vec, train_y), f)
+		print('Training LSTM embedding file saved.')
 	
 	test_question1_vec = lm_1b_infer(args, inputLength, test_question1)
+	print('Test Q1 shape: ', test_question1_vec.shape)
 	test_question2_vec = lm_1b_infer(args, inputLength, test_question2)
-	fname = join(output_dir, 'test_lstm_vec.npy')
-	with gfile.Open(fname, mode='w') as f:
-		save(f, [test_question1_vec, test_question2_vec, test_y])
-	print('Training LSTM embedding file saved.')
+	print('Test Q2 shape: ', test_question2_vec.shape)
+	
+	with open(output_dir + '/' + timestr + 'test_lstm_vec.pkl', 'wb') as f:
+		pkl.dump( (test_question1_vec, test_question2_vec, test_y), f)
+		print('Training LSTM embedding file saved.')
 	

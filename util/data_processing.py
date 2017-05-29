@@ -65,14 +65,14 @@ def tokenizeIt(table, clean=False, addHead=None):
 		if clean:
 # 			text = stripTagsAndUris(text)
 			text = get_words(text)
-			if not type(addHead) == type(None):
+			if not addHead is None:
 				text = [addHead] + text
 			tokenizedTable.append(text)
 			if len(text) > maxLen:
 				maxLen = len(text)
 		else:
 			text = str(text).split(' ')
-			if not type(addHead) == type(None):
+			if not addHead is None:
 				text = [addHead] + text
 			tokenizedTable.append(text)
 			if len(text) > maxLen:

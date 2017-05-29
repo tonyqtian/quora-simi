@@ -47,7 +47,7 @@ parser.add_argument("--load-model-weights", dest="load_model_weights", type=str,
 parser.add_argument("--load-vocab-from-file", dest="load_vocab_from_file", type=str, metavar='<str>', default=None, help="(Optional) Path to the existing vocab file")
 parser.add_argument("--raw-material", dest="rawMaterial", action='store_true', help="Use Raw Material")
 
-parser.add_argument("--vec-inference", dest="vecInf", action='store_true', help="Inference Mode for vector generation")
+parser.add_argument("--vec-inference", dest="vecinf", action='store_true', help="Inference Mode for vector generation")
 parser.add_argument("--vocab_file", dest="vocab_file", type=str, metavar='<str>', default=None, help="Path to the vocab file")
 parser.add_argument("--pbtxt", dest="pbtxt", type=str, metavar='<str>', default=None, help="Path to pb text file")
 parser.add_argument("--ckpt", dest="ckpt", type=str, metavar='<str>', default=None, help="Path to check point file")
