@@ -16,7 +16,7 @@ def lm_1b_infer(args, inputLength, data_mat):
 	
 	from util import data_utils
 	vocab = data_utils.CharsVocabulary(args.vocab_file, MAX_WORD_LEN)
- 	
+	
 # 	targets = np.zeros([BATCH_SIZE, NUM_TIMESTEPS], np.int32)
 # 	weights = np.ones([BATCH_SIZE, NUM_TIMESTEPS], np.float32)
 # 

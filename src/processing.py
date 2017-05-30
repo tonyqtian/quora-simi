@@ -136,7 +136,7 @@ def inference(args):
 	inputLength = 50
 	print('Reset max length to %d' % inputLength)
 
-	from lm_1b_model import lm_1b_infer
+	from util.lm_1b_model import lm_1b_infer
 	train_question1_vec = lm_1b_infer(args, inputLength, train_question1)
 	print('Train Q1 shape: ', train_question1_vec.shape)
 	train_question2_vec = lm_1b_infer(args, inputLength, train_question2)
