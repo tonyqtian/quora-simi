@@ -123,7 +123,7 @@ def train(args):
 			writer_sub = csv.writer(fwrt)
 			writer_sub.writerow(['test_id', 'is_duplicate'])
 			idx = 0
-			for itm in preds:
+			for itm in tqdm(preds):
 				writer_sub.writerow([idx, itm])
 				idx += 1
 	elif not args.eval_on_epoch:
