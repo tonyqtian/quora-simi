@@ -113,6 +113,7 @@ def train(args):
 		myCallbacks.append(earlystop)
 	rnnmodel.fit([train_x1, train_x2], train_y, validation_split=args.valid_split, batch_size=args.train_batch_size, epochs=args.epochs, callbacks=myCallbacks)
 	if args.predict_test:
+		print("Predicting test file result...")
 		preds = rnnmodel.predict([test_x1, test_x2], batch_size=args.eval_batch_size)
 		from numpy import squeeze
 		preds = squeeze(preds)

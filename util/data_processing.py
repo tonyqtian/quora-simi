@@ -184,7 +184,7 @@ def w2vEmbdReader(embd_path, reVocab, embd_dim):
 	embd_matrix = np.zeros( (len(reVocab), embd_dim) )
 	with open(embd_path, 'r', encoding='utf8') as fhd:
 		idx = 1 # let 1st padding line all zeros
-		for line in tqdm(fhd):
+		for line in tqdm(fhd, total=len(reVocab)):
 			elem = line.strip().split(' ')
 			assert len(elem) == embd_dim + 1, 'Incorrect Embedding Dimension, expect %d but got %d ' % (embd_dim, len(elem)-1)
 			w2vec = np.array(elem[1:])
