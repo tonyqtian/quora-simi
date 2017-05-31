@@ -22,7 +22,10 @@ def train(args):
 	
 	# process train and test data
 	_, train_question1, train_question2, train_y = get_pdTable(args.train_path)
-	_, test_question1, test_question2, test_y = get_pdTable(args.test_path)
+	if args.predict_test:
+		_, test_question1, test_question2 = get_pdTable(args.test_path, notag=True)
+	else:
+		_, test_question1, test_question2, test_y = get_pdTable(args.test_path)
 	
 	train_question1, train_maxLen1 = tokenizeIt(train_question1, clean=args.rawMaterial)
 	train_question2, train_maxLen2 = tokenizeIt(train_question2, clean=args.rawMaterial)
@@ -99,10 +102,11 @@ def train(args):
 	
 	# train and test model
 	myCallbacks = []
-	if args.eval_on_epoch:
-		from util.model_eval import Evaluator
-		evl = Evaluator(args, output_dir, timestr, myMetrics, [test_x1, test_x2], test_y, vocabReverseDict)
-		myCallbacks.append(evl)
+	if not args.predict_test:
+		if args.eval_on_epoch:
+			from util.model_eval import Evaluator
+			evl = Evaluator(args, output_dir, timestr, myMetrics, [test_x1, test_x2], test_y, vocabReverseDict)
+			myCallbacks.append(evl)
 	if args.earlystop:
 		from keras.callbacks import EarlyStopping
 		earlystop = EarlyStopping(patience = args.earlystop, verbose=1, mode='auto')
