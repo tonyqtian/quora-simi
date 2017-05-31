@@ -4,6 +4,7 @@ Created on Apr 18, 2017
 @author: tonyq
 '''
 import matplotlib
+from tqdm._tqdm import tqdm
 matplotlib.use('Agg')
 
 import logging, time
