@@ -108,7 +108,20 @@ def train(args):
 		earlystop = EarlyStopping(patience = args.earlystop, verbose=1, mode='auto')
 		myCallbacks.append(earlystop)
 	rnnmodel.fit([train_x1, train_x2], train_y, validation_split=args.valid_split, batch_size=args.train_batch_size, epochs=args.epochs, callbacks=myCallbacks)
-	if not args.eval_on_epoch:
+	if args.predict_test:
+		preds = rnnmodel.predict([test_x1, test_x2], batch_size=args.eval_batch_size)
+		from numpy import squeeze
+		preds = squeeze(preds)
+		print('Write predictions into file... Total line: ', len(preds))
+		import csv
+		with open(output_dir + '/'+ timestr + 'predict.csv', 'w', encoding='utf8') as fwrt:
+			writer_sub = csv.writer(fwrt)
+			writer_sub.writerow(['test_id', 'is_duplicate'])
+			idx = 0
+			for itm in preds:
+				writer_sub.writerow([idx, itm])
+				idx += 1
+	elif not args.eval_on_epoch:
 		rnnmodel.evaluate([test_x1, test_x2], test_y, batch_size=args.eval_batch_size)
 	
 	# test output (remove duplicate, remove <pad> <unk>, comparable layout, into csv)
