@@ -32,6 +32,7 @@ from keras.layers.normalization import BatchNormalization
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 
 from sklearn.preprocessing import StandardScaler
+from tqdm._tqdm import tqdm
 
 # from util.utils import mkdir
 
@@ -72,7 +73,7 @@ print('Indexing word vectors')
 embeddings_index = {}
 with open(EMBEDDING_FILE, 'r', encoding='utf8') as f:
 	count = 0
-	for line in f:
+	for line in tqdm(f):
 		values = line.split()
 		word = values[0]
 		coefs = np.asarray(values[1:], dtype='float32')
@@ -148,7 +149,7 @@ labels = []
 with codecs.open(TRAIN_DATA_FILE, encoding='utf-8') as f:
 	reader = csv.reader(f, delimiter=',')
 	header = next(reader)
-	for values in reader:
+	for values in tqdm(reader):
 		texts_1.append(text_to_wordlist(values[1]))
 		texts_2.append(text_to_wordlist(values[2]))
 		labels.append(int(values[3]))
@@ -160,7 +161,7 @@ test_ids = []
 with codecs.open(TEST_DATA_FILE, encoding='utf-8') as f:
 	reader = csv.reader(f, delimiter=',')
 	header = next(reader)
-	for values in reader:
+	for values in tqdm(reader):
 		test_texts_1.append(text_to_wordlist(values[1]))
 		test_texts_2.append(text_to_wordlist(values[2]))
 		test_ids.append(values[0])
@@ -234,7 +235,7 @@ print('Preparing embedding matrix')
 nb_words = min(MAX_NB_WORDS, len(word_index))+1
 
 embedding_matrix = np.zeros((nb_words, EMBEDDING_DIM))
-for word, i in word_index.items():
+for word, i in tqdm(word_index.items()):
 	embedding_vector = embeddings_index.get(word)
 	if embedding_vector is not None:
 		embedding_matrix[i] = embedding_vector
