@@ -264,6 +264,7 @@ def main():
 	X_train, X_valid, y_train, y_valid = train_test_split(X_train, y_train, test_size=0.1, random_state=4242)
 
 	#UPDownSampling
+	print("Train Sampling...")
 	pos_train = X_train[y_train == 1]
 	neg_train = X_train[y_train == 0]
 	X_train = pd.concat((neg_train, pos_train.iloc[:int(0.8*len(pos_train))], neg_train))
@@ -271,6 +272,7 @@ def main():
 	print(np.mean(y_train))
 	del pos_train, neg_train
 
+	print("Valid Sampling...")
 	pos_valid = X_valid[y_valid == 1]
 	neg_valid = X_valid[y_valid == 0]
 	X_valid = pd.concat((neg_valid, pos_valid.iloc[:int(0.8 * len(pos_valid))], neg_valid))
@@ -288,11 +290,13 @@ def main():
 	params['base_score'] = 0.2
 	# params['scale_pos_weight'] = 0.2
 
+	print("DMatrix...")
 	d_train = xgb.DMatrix(X_train, label=y_train)
 	d_valid = xgb.DMatrix(X_valid, label=y_valid)
 
 	watchlist = [(d_train, 'train'), (d_valid, 'valid')]
 
+	print("XGBoost training...")
 	bst = xgb.train(params, d_train, 2500, watchlist, early_stopping_rounds=50, verbose_eval=50)
 	print(log_loss(y_valid, bst.predict(d_valid)))
 	bst.save_model(output_dir + '/' + timestr + args.save + '.mdl')
@@ -321,8 +325,3 @@ def main():
 
 if __name__ == '__main__':
 	main()
-
-
-
-
-
