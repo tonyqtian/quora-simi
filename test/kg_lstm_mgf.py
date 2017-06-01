@@ -33,7 +33,7 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 
 from sklearn.preprocessing import StandardScaler
 
-from util.utils import mkdir
+# from util.utils import mkdir
 
 # import sys
 # reload(sys)
@@ -61,7 +61,7 @@ re_weight = True # whether to re-weight classes to fit the 17.5% share in test s
 
 timestr = time.strftime("%Y%m%d-%H%M%S-")
 output_dir = '../output/' + time.strftime("%m%d")
-mkdir(output_dir)
+# mkdir(output_dir)
 STAMP = 'lstm_%d_%d_%.2f_%.2f'%(num_lstm, num_dense, rate_drop_lstm, rate_drop_dense)
 
 ########################################
@@ -308,7 +308,7 @@ model.summary()
 print(STAMP)
 
 early_stopping =EarlyStopping(monitor='val_loss', patience=3)
-bst_model_path = output_dir + STAMP + '.h5'
+bst_model_path = output_dir + '/' + timestr + STAMP + '.h5'
 model_checkpoint = ModelCheckpoint(bst_model_path, save_best_only=True, save_weights_only=True)
 
 hist = model.fit([data_1_train, data_2_train, leaks_train], labels_train, \
@@ -329,4 +329,4 @@ preds += model.predict([test_data_2, test_data_1, test_leaks], batch_size=8192, 
 preds /= 2
 
 submission = pd.DataFrame({'test_id':test_ids, 'is_duplicate':preds.ravel()})
-submission.to_csv(output_dir + '%.4f_'%(bst_val_score)+STAMP+'.csv', index=False)
+submission.to_csv(output_dir + '/' + timestr + '%.4f_'%(bst_val_score)+STAMP+'.csv', index=False)
