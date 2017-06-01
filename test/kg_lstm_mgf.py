@@ -50,7 +50,9 @@ TEST_DATA_FILE = BASE_DIR + 'test_full.clean.csv'
 MAX_SEQUENCE_LENGTH = 30
 MAX_NB_WORDS = 200000
 EMBEDDING_DIM = 300
-VALIDATION_SPLIT = 0.1
+VALIDATION_SPLIT = 0.05
+EPOCHES = 11
+BATCH_SIZE = 2048
 
 num_lstm = np.random.randint(175, 275)
 num_dense = np.random.randint(100, 150)
@@ -317,7 +319,7 @@ model_checkpoint = ModelCheckpoint(bst_model_path, save_best_only=True, save_wei
 
 hist = model.fit([data_1_train, data_2_train, leaks_train], labels_train, \
 		validation_data=([data_1_val, data_2_val, leaks_val], labels_val, weight_val), \
-		epochs=200, batch_size=2048, shuffle=True, \
+		epochs=EPOCHES, batch_size=BATCH_SIZE, shuffle=True, \
 		class_weight=class_weight, callbacks=[early_stopping, model_checkpoint])
 
 model.load_weights(bst_model_path)

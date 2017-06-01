@@ -46,7 +46,8 @@ def train(args):
 			else:
 				embdw2v = None
 	else:
-		vocabDict, vocabReverseDict = createVocab([train_question1, train_question2], min_count=3, reservedList=['<pad>', '<unk>'])
+		vocabDict, vocabReverseDict = createVocab([train_question1, train_question2, test_question1, test_question2], 
+												min_count=3, reservedList=['<pad>', '<unk>'])
 		embdw2v = None
 		unk = '<unk>'
 	# logger.info(vocabDict)
