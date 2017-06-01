@@ -11,7 +11,9 @@ import xgboost as xgb
 from nltk.corpus import stopwords
 from collections import Counter
 from sklearn.metrics import log_loss
-from sklearn.cross_validation import train_test_split
+# from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
+from tqdm._tqdm import tqdm
 
 # from xgboost import XGBClassifier
 
@@ -201,19 +203,22 @@ def main():
 	output_dir = '../output/' + time.strftime("%m%d")
 # 	mkdir(output_dir)
 
+	print("Reading train features...")
 	df_train = pd.read_csv('../data/train_features.csv', encoding="ISO-8859-1")
 	X_train_ab = df_train.iloc[:, 2:-1]
 	X_train_ab = X_train_ab.drop('euclidean_distance', axis=1)
 	X_train_ab = X_train_ab.drop('jaccard_distance', axis=1)
 
+	print("Reading train material...")
 	df_train = pd.read_csv('../data/train.clean.csv')
 	df_train = df_train.fillna(' ')
 
+	print("Reading test material...")
 	df_test = pd.read_csv('../data/test.clean.csv')
 	ques = pd.concat([df_train[['question1', 'question2']], \
 		df_test[['question1', 'question2']]], axis=0).reset_index(drop='index')
 	q_dict = defaultdict(set)
-	for i in range(ques.shape[0]):
+	for i in tqdm(range(ques.shape[0])):
 			q_dict[ques.question1[i]].add(ques.question2[i])
 			q_dict[ques.question2[i]].add(ques.question1[i])
 
