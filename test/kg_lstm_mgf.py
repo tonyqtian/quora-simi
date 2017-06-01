@@ -149,10 +149,9 @@ with codecs.open(TRAIN_DATA_FILE, encoding='utf-8') as f:
 	reader = csv.reader(f, delimiter=',')
 	header = next(reader)
 	for values in reader:
-		print('values length', len(values))
-		texts_1.append(text_to_wordlist(values[3]))
-		texts_2.append(text_to_wordlist(values[4]))
-		labels.append(int(values[5]))
+		texts_1.append(text_to_wordlist(values[1]))
+		texts_2.append(text_to_wordlist(values[2]))
+		labels.append(int(values[3]))
 print('Found %s texts in train.csv' % len(texts_1))
 
 test_texts_1 = []
