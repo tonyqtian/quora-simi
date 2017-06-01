@@ -192,6 +192,8 @@ test_ids = np.array(test_ids)
 ## generate leaky features
 ########################################
 
+print("Generating leaky features...")
+
 train_df = pd.read_csv(TRAIN_DATA_FILE)
 test_df = pd.read_csv(TEST_DATA_FILE)
 
@@ -222,6 +224,7 @@ test_df['q2_freq'] = test_df.apply(q2_freq, axis=1, raw=True)
 leaks = train_df[['q1_q2_intersect', 'q1_freq', 'q2_freq']]
 test_leaks = test_df[['q1_q2_intersect', 'q1_freq', 'q2_freq']]
 
+print("Preparing standard scaler...")
 ss = StandardScaler()
 ss.fit(np.vstack((leaks, test_leaks)))
 leaks = ss.transform(leaks)
