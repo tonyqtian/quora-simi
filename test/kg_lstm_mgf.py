@@ -149,6 +149,7 @@ with codecs.open(TRAIN_DATA_FILE, encoding='utf-8') as f:
 	reader = csv.reader(f, delimiter=',')
 	header = next(reader)
 	for values in reader:
+		print('values length', len(values))
 		texts_1.append(text_to_wordlist(values[3]))
 		texts_2.append(text_to_wordlist(values[4]))
 		labels.append(int(values[5]))
