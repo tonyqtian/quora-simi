@@ -45,7 +45,7 @@ from sklearn.preprocessing import StandardScaler
 BASE_DIR = '../data/'
 EMBEDDING_FILE = BASE_DIR + 'glove.840B.quoraVocab.300d.txt'
 TRAIN_DATA_FILE = BASE_DIR + 'train.clean.csv'
-TEST_DATA_FILE = BASE_DIR + 'test.clean.csv'
+TEST_DATA_FILE = BASE_DIR + 'test_full.clean.csv'
 MAX_SEQUENCE_LENGTH = 30
 MAX_NB_WORDS = 200000
 EMBEDDING_DIM = 300
