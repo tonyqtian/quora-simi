@@ -13,7 +13,7 @@ totalen = len(train.is_duplicate)
 print('Total size: ', totalen)
 
 fulllist = zip(train.test_id, train.is_duplicate)
-length = len(train.question1)
+length = len(train.is_duplicate)
 del train
 
 with open("../output/0601/20170601-144724-XGB_leaky.clean.csv", "w", encoding='utf8') as fwrt:
