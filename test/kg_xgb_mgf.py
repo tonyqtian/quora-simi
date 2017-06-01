@@ -201,10 +201,10 @@ def main():
     X_train_ab = X_train_ab.drop('euclidean_distance', axis=1)
     X_train_ab = X_train_ab.drop('jaccard_distance', axis=1)
 
-    df_train = pd.read_csv('../data/train.csv')
+    df_train = pd.read_csv('../data/train.clean.csv')
     df_train = df_train.fillna(' ')
 
-    df_test = pd.read_csv('../data/test.csv')
+    df_test = pd.read_csv('../data/test.clean.csv')
     ques = pd.concat([df_train[['question1', 'question2']], \
         df_test[['question1', 'question2']]], axis=0).reset_index(drop='index')
     q_dict = defaultdict(set)
@@ -285,7 +285,7 @@ def main():
 
     bst = xgb.train(params, d_train, 2500, watchlist, early_stopping_rounds=50, verbose_eval=50)
     print(log_loss(y_valid, bst.predict(d_valid)))
-    bst.save_model(args.save + '.mdl')
+    bst.save_model('../output/' + args.save + '.mdl')
 
 
     print('Building Test Features')
@@ -307,7 +307,7 @@ def main():
     sub = pd.DataFrame()
     sub['test_id'] = df_test['test_id']
     sub['is_duplicate'] = p_test
-    sub.to_csv('../predictions/' + args.save + '.csv')
+    sub.to_csv('../output/' + args.save + '.csv')
 
 if __name__ == '__main__':
     main()
