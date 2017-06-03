@@ -96,7 +96,7 @@ class Evaluator(Callback):
 					infr_line2.append(self.reVocab[int(strin)])
 			logger.info('[Test]  ')
 			logger.info('[Test]  Line: %s  v.s %s ' % (' '.join(infr_line1), ' '.join(infr_line2)))
-# 			logger.info('[Test]  True: %d  Pred %d ' % (pred, real) )
+			logger.info('[Test]  True: %d  Pred %d ' % (pred, real) )
 							
 	def print_info(self, epoch, precision, logloss, mse):
 		logger.info('[Test]  Epoch: %i  Precision: %.4f  Log Loss %.4f  MSE %.4f' % (epoch, precision, logloss, mse))
