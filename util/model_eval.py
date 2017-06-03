@@ -88,11 +88,11 @@ class Evaluator(Callback):
 			infr_line1 = []
 			for strin in infr[0]:
 				if not strin == 0:
-					infr_line1.append(self.reVocab[strin])
+					infr_line1.append(self.reVocab[int(strin)])
 			infr_line2 = []
 			for strin in infr[1]:
 				if not strin == 0:
-					infr_line2.append(self.reVocab[strin])
+					infr_line2.append(self.reVocab[int(strin)])
 			logger.info('[Test]  ')
 			logger.info('[Test]  Line: %s  v.s %s ' % (' '.join(infr_line1), ' '.join(infr_line2)))
 			logger.info('[Test]  True: %d  Pred %d ' % (pred, real) )
