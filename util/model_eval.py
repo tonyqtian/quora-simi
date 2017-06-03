@@ -44,7 +44,8 @@ class Evaluator(Callback):
 			precision = mean(equal(self.test_y, preds).astype(int))
 			self.test_precisions.append(precision)
 			
-			self.print_pred(self.test_x[:self.evl_pred], preds[:self.evl_pred], self.test_y[:self.evl_pred])
+			self.print_pred([ self.test_x[0][:self.evl_pred], self.test_x[1][:self.evl_pred] ],
+						 preds[:self.evl_pred], self.test_y[:self.evl_pred])
 			self.print_info(epoch, precision, self.test_loss, self.test_metric)
 			
 			if self.save_model:
@@ -84,18 +85,18 @@ class Evaluator(Callback):
 		plt.close()
 
 	def print_pred(self, infers, preds, reals):
-		for (infr, pred, real) in zip(infers, preds, reals):
+		for (infr0, infr1, pred, real) in zip(infers[0], infers[1], preds, reals):
 			infr_line1 = []
-			for strin in infr[0]:
+			for strin in infr0:
 				if not strin == 0:
 					infr_line1.append(self.reVocab[int(strin)])
 			infr_line2 = []
-			for strin in infr[1]:
+			for strin in infr1:
 				if not strin == 0:
 					infr_line2.append(self.reVocab[int(strin)])
 			logger.info('[Test]  ')
 			logger.info('[Test]  Line: %s  v.s %s ' % (' '.join(infr_line1), ' '.join(infr_line2)))
-			logger.info('[Test]  True: %d  Pred %d ' % (pred, real) )
+# 			logger.info('[Test]  True: %d  Pred %d ' % (pred, real) )
 							
 	def print_info(self, epoch, precision, logloss, mse):
 		logger.info('[Test]  Epoch: %i  Precision: %.4f  Log Loss %.4f  MSE %.4f' % (epoch, precision, logloss, mse))
