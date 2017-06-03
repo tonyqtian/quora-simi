@@ -58,6 +58,18 @@ def train(args):
 	test_x1 = word2num(test_question1, vocabDict, unk, inputLength, padding='pre')
 	test_x2 = word2num(test_question2, vocabDict, unk, inputLength, padding='pre')
 	
+	if args.train_feature_path is not '':
+		from pandas import read_csv
+		from numpy import array
+		df_train = read_csv(args.train_feature_path, encoding="ISO-8859-1")
+		train_features = df_train.iloc[:, 2:]
+		feature_length = len(train_features.columns)
+		train_features = array(train_features)
+		del df_train		
+		df_test = read_csv(args.test_feature_path, encoding="ISO-8859-1")
+		test_features = df_test.iloc[:, 2:]
+		test_features = array(test_features)
+		del df_test
 	# choose model 
 	from src.rnn_model import getModel
 	
@@ -73,7 +85,10 @@ def train(args):
 			rnnmodel = model_from_json(json_file.read(), custom_objects={"DenseWithMasking": DenseWithMasking})
 		logger.info('Loaded model from saved json')
 	else:
-		rnnmodel = getModel(args, inputLength, len(vocabDict), embd=embdw2v)
+		if args.train_feature_path is not '':
+			rnnmodel = getModel(args, inputLength, len(vocabDict), embd=embdw2v, feature_length=feature_length)
+		else:
+			rnnmodel = getModel(args, inputLength, len(vocabDict), embd=embdw2v)
 		
 	if args.load_model_weights:
 		rnnmodel.load_weights(args.load_model_weights)
@@ -101,22 +116,31 @@ def train(args):
 		with open(output_dir + '/'+ timestr + 'model_config.json', 'w') as arch:
 			arch.write(rnnmodel.to_json(indent=2))
 		logger.info('  Done')
-	
+
+	train_x = [train_x1, train_x2]
+	test_x = [test_x1, test_x2]
+	if args.train_feature_path is not '':
+		train_x += [train_features]
+		test_x +=[test_features]
+			
 	# train and test model
 	myCallbacks = []
 	if not args.predict_test:
 		if args.eval_on_epoch:
 			from util.model_eval import Evaluator
-			evl = Evaluator(args, output_dir, timestr, myMetrics, [test_x1, test_x2], test_y, vocabReverseDict)
+			evl = Evaluator(args, output_dir, timestr, myMetrics, test_x, test_y, vocabReverseDict)
 			myCallbacks.append(evl)
 	if args.earlystop:
 		from keras.callbacks import EarlyStopping
 		earlystop = EarlyStopping(patience = args.earlystop, verbose=1, mode='auto')
 		myCallbacks.append(earlystop)
-	rnnmodel.fit([train_x1, train_x2], train_y, validation_split=args.valid_split, batch_size=args.train_batch_size, epochs=args.epochs, callbacks=myCallbacks)
+			
+	rnnmodel.fit(train_x, train_y, validation_split=args.valid_split, batch_size=args.train_batch_size,
+				 epochs=args.epochs, callbacks=myCallbacks)
+	
 	if args.predict_test:
 		print("Predicting test file result...")
-		preds = rnnmodel.predict([test_x1, test_x2], batch_size=args.eval_batch_size, verbose=1)
+		preds = rnnmodel.predict(test_x, batch_size=args.eval_batch_size, verbose=1)
 		from numpy import squeeze
 		preds = squeeze(preds)
 		print('Write predictions into file... Total line: ', len(preds))
@@ -129,7 +153,7 @@ def train(args):
 				writer_sub.writerow([idx, itm])
 				idx += 1
 	elif not args.eval_on_epoch:
-		rnnmodel.evaluate([test_x1, test_x2], test_y, batch_size=args.eval_batch_size)
+		rnnmodel.evaluate(test_x, test_y, batch_size=args.eval_batch_size)
 	
 	# test output (remove duplicate, remove <pad> <unk>, comparable layout, into csv)
 	# final inference: output(remove duplicate, remove <pad> <unk>, limit output words to 3 or 2 or 1..., into csv)

@@ -33,18 +33,26 @@ def lm_1b_infer(args, inputLength, data_mat):
 	
 	for line in tqdm(data_mat, file=sys.stdout):
 		word_ids = [vocab.word_to_id(w) for w in line]
-		char_ids = [vocab.word_to_char_ids(w) for w in line]		
+		char_ids = [vocab.word_to_char_ids(w) for w in line]
 		for i in range(len(word_ids)):
 			inputs[0, 0] = word_ids[i]
 			char_ids_inputs[0, 0, :] = char_ids[i]
 			
-			# Add 'lstm/lstm_0/control_dependency' if you want to dump previous layer
-			# LSTM.
-			lstm_emb = sess.run(t['lstm/lstm_1/control_dependency'],
-								feed_dict={t['char_inputs_in']: char_ids_inputs,
-											t['inputs_in']: inputs,
-											t['targets_in']: targets,
-											t['target_weights_in']: weights})
+			try:
+				# Add 'lstm/lstm_0/control_dependency' if you want to dump previous layer
+				# LSTM.
+				lstm_emb = sess.run(t['lstm/lstm_1/control_dependency'],
+									feed_dict={t['char_inputs_in']: char_ids_inputs,
+												t['inputs_in']: inputs,
+												t['targets_in']: targets,
+												t['target_weights_in']: weights})
+			except:
+				print("Word ID input: ", word_ids)
+				print("Char ID input: ", char_ids)
+				print("Current Line: ", line)
+				print("Current Line ID: ", idx)
+				raise RuntimeError
+		idx += 1
 		if len(final_vec) == 0:
 			final_vec = lstm_emb
 		else:
