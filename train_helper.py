@@ -30,7 +30,7 @@ parser.add_argument("--epochs", dest="epochs", type=int, metavar='<int>', defaul
 parser.add_argument("--seed", dest="seed", type=int, metavar='<int>', default=1111, help="Random seed (default=1234)")
 parser.add_argument("--plot", dest="plot", action='store_true', help="Save PNG plot")
 parser.add_argument("--onscreen", dest="onscreen", action='store_true', help="Show log on stdout")
-parser.add_argument("--earlystop", dest="earlystop", type=int, metavar='<int>', default=4, help="Use early stop")
+parser.add_argument("--earlystop", dest="earlystop", type=int, metavar='<int>', default=10, help="Use early stop")
 parser.add_argument("--verbose", dest="verbose", type=int, metavar='<int>', default=1, help="Show training process bar during train and val")
 parser.add_argument("--valid-split", dest="valid_split", type=float, metavar='<float>', default=0.1, help="Split validation set from training set (default=0.0)")
 parser.add_argument("--mem-opt", dest="rnn_opt", type=str, metavar='<str>', default='gpu', help="RNN consume_less (cpu|mem|gpu) (default=gpu)")

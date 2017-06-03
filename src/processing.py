@@ -62,12 +62,12 @@ def train(args):
 		from pandas import read_csv
 		from numpy import array
 		df_train = read_csv(args.train_feature_path, encoding="ISO-8859-1")
-		train_features = df_train.iloc[:, 2:]
+		train_features = df_train.iloc[:, 4:]
 		feature_length = len(train_features.columns)
 		train_features = array(train_features)
 		del df_train		
 		df_test = read_csv(args.test_feature_path, encoding="ISO-8859-1")
-		test_features = df_test.iloc[:, 2:]
+		test_features = df_test.iloc[:, 4:]
 		test_features = array(test_features)
 		del df_test
 	# choose model 
