@@ -7,6 +7,7 @@ import logging
 from keras.callbacks import Callback
 import matplotlib.pyplot as plt
 from numpy import around, mean, equal, squeeze
+from random import randint
 
 logger = logging.getLogger(__name__)
 
@@ -44,8 +45,9 @@ class Evaluator(Callback):
 			precision = mean(equal(self.test_y, preds).astype(int))
 			self.test_precisions.append(precision)
 			
-			self.print_pred([ self.test_x[0][:self.evl_pred], self.test_x[1][:self.evl_pred] ],
-						 preds[:self.evl_pred], self.test_y[:self.evl_pred])
+			idx = randint(0, len(self.test_y)//2 )			
+			self.print_pred([ self.test_x[0][idx:idx+self.evl_pred], self.test_x[1][idx:idx+self.evl_pred] ],
+						 preds[idx:idx+self.evl_pred], self.test_y[idx:idx+self.evl_pred])
 			self.print_info(epoch, precision, self.test_loss, self.test_metric)
 			
 			if self.save_model:
@@ -96,7 +98,10 @@ class Evaluator(Callback):
 					infr_line2.append(self.reVocab[int(strin)])
 			logger.info('[Test]  ')
 			logger.info('[Test]  Line: %s  v.s %s ' % (' '.join(infr_line1), ' '.join(infr_line2)))
-			logger.info('[Test]  True: %d  Pred %d ' % (pred, real) )
+			try:
+				logger.info('[Test]  True: %d  Pred %d ' % (real, pred) )
+			except ValueError:
+				logger.info('[Test]  True: %d  Pred %f ' % (real, pred) )
 							
 	def print_info(self, epoch, precision, logloss, mse):
 		logger.info('[Test]  Epoch: %i  Precision: %.4f  Log Loss %.4f  MSE %.4f' % (epoch, precision, logloss, mse))
