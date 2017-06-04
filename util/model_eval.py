@@ -109,7 +109,7 @@ class Evaluator(Callback):
 							
 	def print_info(self, epoch, precision, logloss, mse):
 		logger.info('[Test]  Epoch: %i  Precision: %.4f  Log Loss %.4f  MSE %.4f' % (epoch, precision, logloss, mse))
-		logger.info('[Test]  ')
+		logger.info('[Test]  ----------------------------------------------------- ')
 
 	def print_best(self):
 		logger.info('[Test]  ')
