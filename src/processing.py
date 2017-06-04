@@ -33,9 +33,9 @@ def train(args):
 	test_question1, test_maxLen1 = tokenizeIt(test_question1, clean=args.rawMaterial)
 	test_question2, test_maxLen2 = tokenizeIt(test_question2, clean=args.rawMaterial)
 	inputLength = max(train_maxLen1, train_maxLen2, test_maxLen1, test_maxLen2)
-	print('Max input length: ', inputLength)
+	logger.info('Max input length: ', inputLength)
 	inputLength = 32
-	print('Reset max length to 32')
+	logger.info('Reset max length to 32')
 		
 	if args.load_vocab_from_file:
 		with open(args.load_vocab_from_file, 'rb') as vocab_file:
@@ -71,10 +71,12 @@ def train(args):
 		train_features = df_train.iloc[:, -3:]
 		feature_length = len(train_features.columns)
 		train_features = array(train_features)
+		logger.info('Loaded train feature shape: ', train_features.shape)
 		del df_train		
 		df_test = read_csv(args.test_feature_path, encoding="ISO-8859-1")
 		test_features = df_test.iloc[:, -3:]
 		test_features = array(test_features)
+		logger.info('Loaded test feature shape: ', test_features.shape)
 		del df_test
 		# Normalize Data
 		from sklearn.preprocessing.data import StandardScaler
@@ -153,11 +155,11 @@ def train(args):
 				 epochs=args.epochs, callbacks=myCallbacks)
 	
 	if args.predict_test:
-		print("Predicting test file result...")
+		logger.info("Predicting test file result...")
 		preds = rnnmodel.predict(test_x, batch_size=args.eval_batch_size, verbose=1)
 		from numpy import squeeze
 		preds = squeeze(preds)
-		print('Write predictions into file... Total line: ', len(preds))
+		logger.info('Write predictions into file... Total line: ', len(preds))
 		import csv
 		with open(output_dir + '/'+ timestr + 'predict.csv', 'w', encoding='utf8') as fwrt:
 			writer_sub = csv.writer(fwrt)
