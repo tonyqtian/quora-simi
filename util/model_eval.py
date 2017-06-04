@@ -41,8 +41,8 @@ class Evaluator(Callback):
 		self.test_accs.append(self.test_metric)
 		if self.evl_pred:
 			pred = model.predict(self.test_x, batch_size=self.batch_size)
-			preds = around(squeeze(pred))
-			precision = mean(equal(self.test_y, preds).astype(int))
+			preds = squeeze(pred)
+			precision = mean(equal(self.test_y, around(preds)).astype(int))
 			self.test_precisions.append(precision)
 			
 			idx = randint(0, len(self.test_y)//2 )			
@@ -97,9 +97,10 @@ class Evaluator(Callback):
 				if not strin == 0:
 					infr_line2.append(self.reVocab[int(strin)])
 			logger.info('[Test]  ')
-			logger.info('[Test]  Line: %s  v.s %s ' % (' '.join(infr_line1), ' '.join(infr_line2)))
+			logger.info('[Test]  Q1:  %s ' % ' '.join(infr_line1))
+			logger.info('[Test]  Q2:  %s ' % ' '.join(infr_line2))
 			try:
-				logger.info('[Test]  True: %d  Pred %d ' % (real, pred) )
+				logger.info('[Test]  True: %d  Pred %d (%.4f) ' % (real, around(pred), pred) )
 			except ValueError:
 				logger.info('[Test]  True: %d  Pred %f ' % (real, pred) )
 							

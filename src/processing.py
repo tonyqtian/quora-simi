@@ -42,7 +42,13 @@ def train(args):
 			(vocabDict, vocabReverseDict) = pkl.load(vocab_file)
 			unk = None
 			if args.w2v:
-				embdw2v = w2vEmbdReader(args.w2v, vocabReverseDict, args.embd_dim)
+				if args.w2v.endswith('.pkl'):
+					with open(args.w2v, 'rb') as embd_file:
+						embdw2v = pkl.load(embd_file)
+				else:
+					embdw2v = w2vEmbdReader(args.w2v, vocabReverseDict, args.embd_dim)
+					with open(output_dir + '/'+ timestr + 'embd_dump.' + str(args.embd_dim) + 'd.pkl', 'wb') as embd_file:
+						pkl.dump(embdw2v, embd_file)
 			else:
 				embdw2v = None
 	else:
@@ -62,12 +68,12 @@ def train(args):
 		from pandas import read_csv
 		from numpy import array
 		df_train = read_csv(args.train_feature_path, encoding="ISO-8859-1")
-		train_features = df_train.iloc[:, 2:]
+		train_features = df_train.iloc[:, 2:8]
 		feature_length = len(train_features.columns)
 		train_features = array(train_features)
 		del df_train		
 		df_test = read_csv(args.test_feature_path, encoding="ISO-8859-1")
-		test_features = df_test.iloc[:, 2:]
+		test_features = df_test.iloc[:, 2:8]
 		test_features = array(test_features)
 		del df_test
 	# choose model 
