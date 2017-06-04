@@ -17,10 +17,10 @@ from tqdm._tqdm import tqdm
 
 # from xgboost import XGBClassifier
 
-train_file = '../data/train_sample.csv'
-test_file = '../data/test_sample.csv'
-train_feature = '../data/train_features_sample.csv'
-test_feature = '../data/test_features_sample.csv'
+train_file = '../data/train.csv'
+test_file = '../data/test.csv'
+train_feature = '../data/train_features.csv'
+test_feature = '../data/test_features.csv'
 
 def word_match_share(row, stops=None):
 	q1words = {}
