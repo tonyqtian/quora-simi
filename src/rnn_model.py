@@ -25,7 +25,7 @@ mem_opt_dict = {'cpu':0, 'mem':1, 'gpu': 2}
 def getModel(args, input_length, vocab_size, embd, embd_trainable=True, feature_length=0):
 	rnn_opt = mem_opt_dict[args.rnn_opt]
 	rnn_dim = args.rnn_dim
-	dropout_prob = args.dropout_prob + random() * 0.25
+	dropout_prob = args.dropout_prob + random() * 0.15
 # 	if args.activation == 'sigmoid':
 # 		final_init = 'he_normal'
 # 	else:

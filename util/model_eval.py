@@ -11,6 +11,8 @@ from random import randint
 
 logger = logging.getLogger(__name__)
 
+judgeInfo = {False:'Incorect', True:''}
+
 class Evaluator(Callback):
 	
 	def __init__(self, args, out_dir, timestr, metric, test_x, test_y, reVocab):
@@ -100,7 +102,8 @@ class Evaluator(Callback):
 			logger.info('[Test]  Q1:  %s ' % ' '.join(infr_line1))
 			logger.info('[Test]  Q2:  %s ' % ' '.join(infr_line2))
 			try:
-				logger.info('[Test]  True: %d  Pred %d (%.4f) ' % (real, around(pred), pred) )
+				logger.info('[Test]  True: %d  Pred %d (%.4f) %s ' % 
+						(real, around(pred), pred, judgeInfo[real==around(pred)]) )
 			except ValueError:
 				logger.info('[Test]  True: %d  Pred %f ' % (real, pred) )
 							
