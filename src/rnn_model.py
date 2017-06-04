@@ -68,7 +68,6 @@ def getModel(args, input_length, vocab_size, embd, embd_trainable=True, feature_
 		feature_input = Input(shape=(feature_length,), dtype='float32')
 		featured = BatchNormalization()(feature_input)
 		featured = DenseWithMasking(feature_length*3//5, kernel_initializer='he_uniform', activation='relu')(featured)
-# 		featured = DenseWithMasking(feature_length//2, activation='relu')(featured)
 		merged = Concatenate()([vec1, vec2, featured])
 	else:	
 		merged = Concatenate()([vec1, vec2])
@@ -76,12 +75,10 @@ def getModel(args, input_length, vocab_size, embd, embd_trainable=True, feature_
 	merged = Dropout(dropout_prob)(merged)
 
 	merged = DenseWithMasking(rnn_dim, kernel_initializer='he_uniform', activation='relu')(merged)
-# 	merged = DenseWithMasking(rnn_dim, activation='relu')(merged)
 	merged = BatchNormalization()(merged)
 	merged = Dropout(dropout_prob)(merged)
 	
 	preds = DenseWithMasking(1, kernel_initializer='he_normal', activation='sigmoid')(merged)
-# 	preds = DenseWithMasking(1, activation='sigmoid')(merged)
 	if feature_length:
 		model = Model(inputs=[sequence_1_input, sequence_2_input, feature_input], outputs=preds)
 	else:

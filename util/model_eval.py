@@ -109,6 +109,9 @@ class Evaluator(Callback):
 							
 	def print_info(self, epoch, precision, logloss, mse):
 		logger.info('[Test]  Epoch: %i  Precision: %.4f  Log Loss %.4f  MSE %.4f' % (epoch, precision, logloss, mse))
+		logger.info('[Test]  ')
 
 	def print_best(self):
+		logger.info('[Test]  ')
 		logger.info('[Test]  Best @ Epoch %i: Log Loss: %.4f' % (self.best_epoch, self.best_score))
+		logger.info('[Test]  ')

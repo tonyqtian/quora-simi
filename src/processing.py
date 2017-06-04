@@ -4,9 +4,9 @@ Created on Apr 18, 2017
 @author: tonyq
 '''
 import matplotlib
-from tqdm._tqdm import tqdm
 matplotlib.use('Agg')
 
+from tqdm._tqdm import tqdm
 import logging, time
 import pickle as pkl
 from util.utils import setLogger, mkdir, print_args
@@ -76,6 +76,14 @@ def train(args):
 		test_features = df_test.iloc[:, -3:]
 		test_features = array(test_features)
 		del df_test
+		# Normalize Data
+		from sklearn.preprocessing.data import StandardScaler
+		from numpy import vstack
+		ss = StandardScaler()
+		ss.fit(vstack((train_features, test_features)))
+		train_features = ss.transform(train_features)
+		test_features = ss.transform(test_features)
+		del ss
 	# choose model 
 	from src.rnn_model import getModel
 	
