@@ -17,6 +17,10 @@ from tqdm._tqdm import tqdm
 
 # from xgboost import XGBClassifier
 
+train_file = '../data/train.csv'
+test_file = '../data/test.csv'
+train_feature = '../data/train_features.csv'
+test_feature = '../data/test_features.csv'
 
 def word_match_share(row, stops=None):
 	q1words = {}
@@ -204,17 +208,17 @@ def main():
 # 	mkdir(output_dir)
 
 	print("Reading train features...")
-	df_train = pd.read_csv('../data/train_features.csv', encoding="ISO-8859-1")
+	df_train = pd.read_csv(train_feature, encoding="ISO-8859-1")
 	X_train_ab = df_train.iloc[:, 2:-1]
-	X_train_ab = X_train_ab.drop('euclidean_distance', axis=1)
-	X_train_ab = X_train_ab.drop('jaccard_distance', axis=1)
+# 	X_train_ab = X_train_ab.drop('euclidean_distance', axis=1)
+# 	X_train_ab = X_train_ab.drop('jaccard_distance', axis=1)
 
 	print("Reading train material...")
-	df_train = pd.read_csv('../data/train.csv')
+	df_train = pd.read_csv(train_file)
 	df_train = df_train.fillna(' ')
 
 	print("Reading test material...")
-	df_test = pd.read_csv('../data/test.csv')
+	df_test = pd.read_csv(test_file)
 	ques = pd.concat([df_train[['question1', 'question2']], \
 		df_test[['question1', 'question2']]], axis=0).reset_index(drop='index')
 	q_dict = defaultdict(set)
@@ -260,6 +264,12 @@ def main():
 	X_train = build_features(df_train, stops, weights)
 	X_train = pd.concat((X_train, X_train_ab, train_leaky), axis=1)
 	y_train = df_train['is_duplicate'].values
+	
+	df_train1 = pd.read_csv(train_file)
+	X_train1 = pd.concat((df_train1, X_train), axis=1)
+	X_train1.to_csv(output_dir + '/' + timestr + 'train_extra_features' + '.csv', index=False)
+	del df_train1, X_train1
+	del df_train, X_train_ab, train_leaky
 
 	X_train, X_valid, y_train, y_valid = train_test_split(X_train, y_train, test_size=0.1, random_state=4242)
 
@@ -303,12 +313,12 @@ def main():
 
 
 	print('Building Test Features')
-	df_test = pd.read_csv('../data/test_features.csv', encoding="ISO-8859-1")
+	df_test = pd.read_csv(test_feature, encoding="ISO-8859-1")
 	x_test_ab = df_test.iloc[:, 2:-1]
-	x_test_ab = x_test_ab.drop('euclidean_distance', axis=1)
-	x_test_ab = x_test_ab.drop('jaccard_distance', axis=1)
+# 	x_test_ab = x_test_ab.drop('euclidean_distance', axis=1)
+# 	x_test_ab = x_test_ab.drop('jaccard_distance', axis=1)
 	
-	df_test = pd.read_csv('../data/test.csv')
+	df_test = pd.read_csv(test_file)
 	df_test = df_test.fillna(' ')
 
 	df_test['question1'] = df_test['question1'].map(lambda x: str(x).lower().split())
@@ -316,12 +326,18 @@ def main():
 	
 	x_test = build_features(df_test, stops, weights)
 	x_test = pd.concat((x_test, x_test_ab, test_leaky), axis=1)
+	del x_test_ab, test_leaky
+	df_test1 = pd.read_csv(test_file)
+	x_test1 = pd.concat((df_test1, x_test), axis=1)
+	x_test1.to_csv(output_dir + '/' + timestr + 'test_extra_features' + '.csv', index=False)
+	del df_test1, x_test1
+	
 	d_test = xgb.DMatrix(x_test)
 	p_test = bst.predict(d_test)
 	sub = pd.DataFrame()
 	sub['test_id'] = df_test['test_id']
 	sub['is_duplicate'] = p_test
-	sub.to_csv(output_dir + '/' + timestr + args.save + '.csv')
+	sub.to_csv(output_dir + '/' + timestr + args.save + '.csv', index=False)
 
 if __name__ == '__main__':
 	main()
