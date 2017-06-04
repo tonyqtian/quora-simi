@@ -210,11 +210,11 @@ def main():
 	X_train_ab = X_train_ab.drop('jaccard_distance', axis=1)
 
 	print("Reading train material...")
-	df_train = pd.read_csv('../data/train.clean.csv')
+	df_train = pd.read_csv('../data/train.csv')
 	df_train = df_train.fillna(' ')
 
 	print("Reading test material...")
-	df_test = pd.read_csv('../data/test.clean.csv')
+	df_test = pd.read_csv('../data/test.csv')
 	ques = pd.concat([df_train[['question1', 'question2']], \
 		df_test[['question1', 'question2']]], axis=0).reset_index(drop='index')
 	q_dict = defaultdict(set)
@@ -308,7 +308,7 @@ def main():
 	x_test_ab = x_test_ab.drop('euclidean_distance', axis=1)
 	x_test_ab = x_test_ab.drop('jaccard_distance', axis=1)
 	
-	df_test = pd.read_csv('../data/test.clean.csv')
+	df_test = pd.read_csv('../data/test.csv')
 	df_test = df_test.fillna(' ')
 
 	df_test['question1'] = df_test['question1'].map(lambda x: str(x).lower().split())
