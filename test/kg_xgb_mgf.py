@@ -17,10 +17,10 @@ from tqdm._tqdm import tqdm
 
 # from xgboost import XGBClassifier
 
-train_file = '../data/train.csv'
-test_file = '../data/test.csv'
-train_feature = '../data/train_features.csv'
-test_feature = '../data/test_features.csv'
+train_file = '../data/train_sample.csv'
+test_file = '../data/test_sample.csv'
+train_feature = '../data/train_features_sample.csv'
+test_feature = '../data/test_features_sample.csv'
 
 def word_match_share(row, stops=None):
 	q1words = {}
@@ -267,9 +267,10 @@ def main():
 	
 	df_train1 = pd.read_csv(train_file)
 	X_train1 = pd.concat((df_train1, X_train), axis=1)
-	X_train1.to_csv(output_dir + '/' + timestr + 'train_extra_features' + '.csv', index=False)
+	X_train1.to_csv(output_dir + '/' + timestr + 'train_extra_features.csv', index=False)
 	del df_train1, X_train1
 	del df_train, X_train_ab, train_leaky
+	print('Dumped train extra features to file ' + timestr + 'train_extra_features.csv')
 
 	X_train, X_valid, y_train, y_valid = train_test_split(X_train, y_train, test_size=0.1, random_state=4242)
 
@@ -329,8 +330,9 @@ def main():
 	del x_test_ab, test_leaky
 	df_test1 = pd.read_csv(test_file)
 	x_test1 = pd.concat((df_test1, x_test), axis=1)
-	x_test1.to_csv(output_dir + '/' + timestr + 'test_extra_features' + '.csv', index=False)
+	x_test1.to_csv(output_dir + '/' + timestr + 'test_extra_features.csv', index=False)
 	del df_test1, x_test1
+	print('Dumped test extra features to file ' + timestr + 'test_extra_features.csv')
 	
 	d_test = xgb.DMatrix(x_test)
 	p_test = bst.predict(d_test)
@@ -338,6 +340,8 @@ def main():
 	sub['test_id'] = df_test['test_id']
 	sub['is_duplicate'] = p_test
 	sub.to_csv(output_dir + '/' + timestr + args.save + '.csv', index=False)
+	print('Dumped inference to file '+ timestr + args.save + '.csv')
+	print('Finished.')
 
 if __name__ == '__main__':
 	main()
