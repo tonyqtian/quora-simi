@@ -16,6 +16,8 @@ parser.add_argument("--train-path", dest="train_path", type=str, metavar='<str>'
 parser.add_argument("--test-path", dest="test_path", type=str, metavar='<str>', default='data/test_sample.csv', help="The path to the test set")
 parser.add_argument("--train-feature-path", dest="train_feature_path", type=str, metavar='<str>', default='', help="The path to the train feature set")
 parser.add_argument("--test-feature-path", dest="test_feature_path", type=str, metavar='<str>', default='', help="The path to the test feature set")
+parser.add_argument("--feature-idx-start", dest="fidx_start", type=int, metavar='<int>', default=-3, help="Feature index start (default=-3)")
+parser.add_argument("--feature-idx-end", dest="fidx_end", type=int, metavar='<int>', default=-1, help="Feature index end (default=-1)")
 parser.add_argument("--out-dir", dest="out_dir_path", type=str, metavar='<str>', default='output', help="The path to the output directory")
 parser.add_argument("--optimizer", dest="optimizer", type=str, metavar='<str>', default='adam', help="Optimization algorithm (rmsprop|sgd|adagrad|adadelta|adam|adamax) (default=rmsprop)")
 parser.add_argument("--loss", dest="loss", type=str, metavar='<str>', default='binary_crossentropy', help="Loss function")
