@@ -7,7 +7,7 @@ from keras.layers.core import Dense
 from keras.layers.pooling import AveragePooling1D, MaxPool1D
 from keras.layers.convolutional import Convolution1D
 from keras.engine.topology import Layer
-from keras.backend import sum, cast, floatx, mean
+from keras.backend import sum, cast, floatx, mean, max
 
 class DenseWithMasking(Dense):
 	def __init__(self, output_dim, **kwargs):
@@ -66,4 +66,26 @@ class MeanOverTime(Layer):
 		config = {'mask_zero': self.mask_zero}
 		base_config = super(MeanOverTime, self).get_config()
 		return dict(list(base_config.items()) + list(config.items()))
+
+class MaxOverTime(Layer):
+	def __init__(self, mask_zero=True, **kwargs):
+		self.mask_zero = mask_zero
+		self.supports_masking = True
+		super(MaxOverTime, self).__init__(**kwargs)
+
+	def call(self, x, mask=None):
+		return max(x, axis=1)
 	
+	def get_output_shape_for(self, input_shape):
+		return (input_shape[0], input_shape[2])
+
+	def compute_output_shape(self, input_shape):
+		return (input_shape[0], input_shape[2])
+		
+	def compute_mask(self, x, mask):
+		return None
+	
+	def get_config(self):
+		config = {'mask_zero': self.mask_zero}
+		base_config = super(MaxOverTime, self).get_config()
+		return dict(list(base_config.items()) + list(config.items()))	

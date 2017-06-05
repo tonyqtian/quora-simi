@@ -44,12 +44,14 @@ def getModel(args, input_length, vocab_size, embd, feature_length=0):
 						dropout=dropout_prob, recurrent_dropout=dropout_prob)
 
 	if args.mot_layer:
+		from util.my_layers import MeanOverTime
 		w2v_dense_layer = TimeDistributed(DenseWithMasking(args.embd_dim*2//3))
+		meanpool = MeanOverTime()
 
 	if args.cnn_dim:
-		from util.my_layers import Conv1DWithMasking, MaxPooling1DWithMasking
+		from util.my_layers import Conv1DWithMasking, MaxOverTime
 		conv1d = Conv1DWithMasking(filters=args.cnn_dim, kernel_size=2, padding='valid', strides=1)
-		maxpool = MaxPooling1DWithMasking(pool_size=input_length-1, padding='valid')
+		maxpool = MaxOverTime()
 	
 # 	# hidden rnn layer
 # 	from keras.models import Sequential
@@ -82,11 +84,10 @@ def getModel(args, input_length, vocab_size, embd, feature_length=0):
 	merged = []
 	
 	if args.mot_layer:
-		from util.my_layers import MeanOverTime
 		vec1_w2v = w2v_dense_layer(vec1)
 		vec2_w2v = w2v_dense_layer(vec2)
-		vec1_w2v = MeanOverTime()(vec1_w2v)
-		vec2_w2v = MeanOverTime()(vec2_w2v)
+		vec1_w2v = meanpool(vec1_w2v)
+		vec2_w2v = meanpool(vec2_w2v)
 		merged += [vec1_w2v, vec2_w2v]
 		
 	if args.rnn_layer:
@@ -99,8 +100,6 @@ def getModel(args, input_length, vocab_size, embd, feature_length=0):
 		vec2_cnn = conv1d(vec2)
 		vec1_cnn = maxpool(vec1_cnn)
 		vec2_cnn = maxpool(vec2_cnn)
-		vec1_cnn = squeeze(vec1_cnn, axis=1)
-		vec2_cnn = squeeze(vec2_cnn, axis=1)
 		merged += [vec1_cnn, vec2_cnn]
 	
 	if feature_length:
