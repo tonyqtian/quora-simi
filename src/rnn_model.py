@@ -4,7 +4,7 @@ Created on Mar 18, 2017
 @author: tonyq
 '''
 import logging
-from random import random
+# from random import random
 from keras.layers.embeddings import Embedding
 from keras.layers.recurrent import LSTM
 from keras.layers.core import Dropout
@@ -53,6 +53,7 @@ def getModel(args, input_length, vocab_size, embd, feature_length=0):
 		conv1dw2 = Conv1DWithMasking(filters=args.cnn_dim, kernel_size=2, padding='valid', strides=1)
 		conv1dw3 = Conv1DWithMasking(filters=args.cnn_dim, kernel_size=3, padding='valid', strides=1)
 		maxpool = MaxOverTime()
+# 		maxpool = MaxPooling1DWithMasking(pool_size=input_length-1, padding='valid')
 	
 # 	# hidden rnn layer
 # 	from keras.models import Sequential

@@ -33,25 +33,20 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 
 from sklearn.preprocessing import StandardScaler
 from tqdm._tqdm import tqdm
-
 # from util.utils import mkdir
-
-# import sys
-# reload(sys)
-# sys.setdefaultencoding('utf-8')
 
 ########################################
 ## set directories and parameters
 ########################################
 BASE_DIR = '../data/'
 EMBEDDING_FILE = BASE_DIR + 'glove.840B.quoraVocab.300d.txt'
-TRAIN_DATA_FILE = BASE_DIR + 'train.clean.csv'
-TEST_DATA_FILE = BASE_DIR + 'test_full.clean.csv'
+TRAIN_DATA_FILE = BASE_DIR + 'train.csv'
+TEST_DATA_FILE = BASE_DIR + 'test.csv'
 MAX_SEQUENCE_LENGTH = 30
 MAX_NB_WORDS = 200000
 EMBEDDING_DIM = 300
 VALIDATION_SPLIT = 0.05
-EPOCHES = 11
+EPOCHES = 30
 BATCH_SIZE = 2048
 
 num_lstm = np.random.randint(175, 275)
@@ -80,7 +75,6 @@ with open(EMBEDDING_FILE, 'r', encoding='utf8') as f:
 		word = values[0]
 		coefs = np.asarray(values[1:], dtype='float32')
 		embeddings_index[word] = coefs
-
 
 print('Found %d word vectors of glove.' % len(embeddings_index))
 
@@ -152,9 +146,9 @@ with codecs.open(TRAIN_DATA_FILE, encoding='utf-8') as f:
 	reader = csv.reader(f, delimiter=',')
 	header = next(reader)
 	for values in tqdm(reader):
-		texts_1.append(text_to_wordlist(values[1]))
-		texts_2.append(text_to_wordlist(values[2]))
-		labels.append(int(values[3]))
+		texts_1.append(text_to_wordlist(values[3]))
+		texts_2.append(text_to_wordlist(values[4]))
+		labels.append(int(values[5]))
 print('Found %s texts in train.csv' % len(texts_1))
 
 test_texts_1 = []
@@ -164,8 +158,8 @@ with codecs.open(TEST_DATA_FILE, encoding='utf-8') as f:
 	reader = csv.reader(f, delimiter=',')
 	header = next(reader)
 	for values in tqdm(reader):
-		test_texts_1.append(text_to_wordlist(values[1]))
-		test_texts_2.append(text_to_wordlist(values[2]))
+		test_texts_1.append(text_to_wordlist(values[3]))
+		test_texts_2.append(text_to_wordlist(values[4]))
 		test_ids.append(values[0])
 print('Found %s texts in test.csv' % len(test_texts_1))
 
@@ -276,18 +270,42 @@ embedding_layer = Embedding(nb_words, EMBEDDING_DIM, weights=[embedding_matrix],
 						input_length=MAX_SEQUENCE_LENGTH, trainable=False)
 lstm_layer = LSTM(num_lstm, dropout=rate_drop_lstm, recurrent_dropout=rate_drop_lstm)
 
+for_concat = []
 sequence_1_input = Input(shape=(MAX_SEQUENCE_LENGTH,), dtype='int32')
 embedded_sequences_1 = embedding_layer(sequence_1_input)
 x1 = lstm_layer(embedded_sequences_1)
+for_concat += [x1]
 
 sequence_2_input = Input(shape=(MAX_SEQUENCE_LENGTH,), dtype='int32')
 embedded_sequences_2 = embedding_layer(sequence_2_input)
 y1 = lstm_layer(embedded_sequences_2)
+for_concat += [y1]
+
+#added conv
+from keras.layers.convolutional import Convolution1D
+cnn_dim = 128
+conv1dw2 = Convolution1D(filters=cnn_dim, kernel_size=2, padding='valid', strides=1)
+conv1dw3 = Convolution1D(filters=cnn_dim, kernel_size=3, padding='valid', strides=1)
+vec1_cnnw2 = conv1dw2(embedded_sequences_1)
+vec2_cnnw2 = conv1dw2(embedded_sequences_2)
+vec1_cnnw3 = conv1dw3(embedded_sequences_1)
+vec2_cnnw3 = conv1dw3(embedded_sequences_2)
+from util.my_layers import MaxOverTime
+vec1_cnnw2 = MaxOverTime()(vec1_cnnw2)
+vec2_cnnw2 = MaxOverTime()(vec2_cnnw2)
+vec1_cnnw3 = MaxOverTime()(vec1_cnnw3)
+vec2_cnnw3 = MaxOverTime()(vec2_cnnw3)
+for_concat += [vec1_cnnw2]
+for_concat += [vec2_cnnw2]
+for_concat += [vec1_cnnw3]
+for_concat += [vec2_cnnw3]
 
 leaks_input = Input(shape=(leaks.shape[1],))
 leaks_dense = Dense(num_dense//2, activation=act)(leaks_input)
+for_concat += [leaks_dense]
 
-merged = concatenate([x1, y1, leaks_dense])
+# merged = concatenate([x1, y1, leaks_dense])
+merged = concatenate(for_concat)
 merged = BatchNormalization()(merged)
 merged = Dropout(rate_drop_dense)(merged)
 
