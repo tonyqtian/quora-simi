@@ -8,7 +8,7 @@ from random import random
 from keras.layers.embeddings import Embedding
 from keras.layers.recurrent import LSTM
 from keras.layers.core import Dropout
-from keras.layers.wrappers import Bidirectional
+from keras.layers.wrappers import Bidirectional, TimeDistributed
 from keras.layers.merge import Concatenate
 from keras.engine.topology import Input
 from keras.models import Model
@@ -42,6 +42,7 @@ def getModel(args, input_length, vocab_size, embd, feature_length=0):
 	else:
 		rnn_layer = LSTM(rnn_dim, return_sequences=False, implementation=rnn_opt, 
 						dropout=dropout_prob, recurrent_dropout=dropout_prob)
+	w2v_dense_layer = TimeDistributed(DenseWithMasking(args.embd_dim*2//3))
 # 	# hidden rnn layer
 # 	from keras.models import Sequential
 # 	rnn_model = Sequential()
@@ -70,18 +71,25 @@ def getModel(args, input_length, vocab_size, embd, feature_length=0):
 	sequence_2_input = Input(shape=(input_length,), dtype='int32')
 	vec1 = embd_layer(sequence_1_input)
 	vec2 = embd_layer(sequence_2_input)
-	vec1_w2v = MeanOverTime()(vec1)
-	vec2_w2v = MeanOverTime()(vec2)
-	vec1_rnn = rnn_layer(vec1)
-	vec2_rnn = rnn_layer(vec2)
+	merged = []
+	if args.mot_layer:
+		vec1_w2v = w2v_dense_layer(vec1)
+		vec2_w2v = w2v_dense_layer(vec2)
+		vec1_w2v = MeanOverTime()(vec1_w2v)
+		vec2_w2v = MeanOverTime()(vec2_w2v)
+		merged += [vec1_w2v, vec2_w2v]
+	if args.rnn_layer:
+		vec1_rnn = rnn_layer(vec1)
+		vec2_rnn = rnn_layer(vec2)
+		merged += [vec1_rnn, vec2_rnn]
 	
 	if feature_length:
 		feature_input = Input(shape=(feature_length,), dtype='float32')
-		featured = DenseWithMasking(feature_length*3//5, kernel_initializer='he_uniform', 
+		featured = DenseWithMasking(feature_length*4//7, kernel_initializer='he_uniform', 
 								activation='relu')(feature_input)
-		merged = Concatenate()([vec1_rnn, vec1_w2v, vec2_rnn, vec2_w2v, featured])
-	else:	
-		merged = Concatenate()([vec1_rnn, vec1_w2v, vec2_rnn, vec2_w2v])
+		merged += [featured]
+
+	merged = Concatenate()(merged)
 	merged = BatchNormalization()(merged)
 	merged = Dropout(dropout_prob)(merged)
 
