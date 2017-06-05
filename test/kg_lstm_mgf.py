@@ -158,8 +158,8 @@ with codecs.open(TEST_DATA_FILE, encoding='utf-8') as f:
 	reader = csv.reader(f, delimiter=',')
 	header = next(reader)
 	for values in tqdm(reader):
-		test_texts_1.append(text_to_wordlist(values[3]))
-		test_texts_2.append(text_to_wordlist(values[4]))
+		test_texts_1.append(text_to_wordlist(values[1]))
+		test_texts_2.append(text_to_wordlist(values[2]))
 		test_ids.append(values[0])
 print('Found %s texts in test.csv' % len(test_texts_1))
 
