@@ -68,13 +68,19 @@ def train(args):
 		from pandas import read_csv
 		from numpy import array
 		df_train = read_csv(args.train_feature_path, encoding="ISO-8859-1")
-		train_features = df_train.iloc[:, args.fidx_start:args.fidx_end]
+		if args.fidx_end == 0:
+			train_features = df_train.iloc[:, args.fidx_start:]
+		else:
+			train_features = df_train.iloc[:, args.fidx_start:args.fidx_end]
 		feature_length = len(train_features.columns)
 		train_features = array(train_features)
 		logger.info('Loaded train feature length: %d ' % train_features.shape[0])
 		del df_train		
 		df_test = read_csv(args.test_feature_path, encoding="ISO-8859-1")
-		test_features = df_test.iloc[:, args.fidx_start:args.fidx_end]
+		if args.fidx_end == 0:
+			test_features = df_test.iloc[:, args.fidx_start:]
+		else:
+			test_features = df_test.iloc[:, args.fidx_start:args.fidx_end]
 		test_features = array(test_features)
 		logger.info('Loaded test feature length: %d ' % test_features.shape[0])
 		del df_test

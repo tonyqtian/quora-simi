@@ -209,7 +209,7 @@ def main():
 
 	print("Reading train features...")
 	df_train = pd.read_csv(train_feature, encoding="ISO-8859-1")
-	X_train_ab = df_train.iloc[:, 2:-1]
+	X_train_ab = df_train.iloc[:, 2:]
 # 	X_train_ab = X_train_ab.drop('euclidean_distance', axis=1)
 # 	X_train_ab = X_train_ab.drop('jaccard_distance', axis=1)
 
@@ -315,7 +315,7 @@ def main():
 
 	print('Building Test Features')
 	df_test = pd.read_csv(test_feature, encoding="ISO-8859-1")
-	x_test_ab = df_test.iloc[:, 2:-1]
+	x_test_ab = df_test.iloc[:, 2:]
 # 	x_test_ab = x_test_ab.drop('euclidean_distance', axis=1)
 # 	x_test_ab = x_test_ab.drop('jaccard_distance', axis=1)
 	
