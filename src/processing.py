@@ -65,26 +65,36 @@ def train(args):
 	test_x2 = word2num(test_question2, vocabDict, unk, inputLength, padding='pre')
 	
 	if args.train_feature_path is not '':
-		from pandas import read_csv
+		from pandas import read_csv, DataFrame
 		from numpy import array, inf, nan
 		df_train = read_csv(args.train_feature_path, encoding="ISO-8859-1")
-		if args.fidx_end == 0:
+		if args.feature_list is not '':
+			feature_list = args.feature_list.split(',')
+			train_features = DataFrame()
+			for feature_name in feature_list:
+				train_features[feature_name.strip()] = df_train[feature_name.strip()]
+		elif args.fidx_end == 0:
 			train_features = df_train.iloc[:, args.fidx_start:]
 		else:
 			train_features = df_train.iloc[:, args.fidx_start:args.fidx_end]
 		feature_length = len(train_features.columns)
-		train_features = train_features.replace([inf, -inf], 0).replace(nan, 0)
+		train_features = train_features.replace([inf, -inf, nan], 0)
 		train_features = array(train_features)
-		logger.info('Loaded train feature length: %d ' % train_features.shape[0])
+		logger.info('Loaded train feature shape: (%d, %d) ' % train_features.shape)
 		del df_train		
 		df_test = read_csv(args.test_feature_path, encoding="ISO-8859-1")
-		if args.fidx_end == 0:
+		if args.feature_list is not '':
+			feature_list = args.feature_list.split(',')
+			test_features = DataFrame()
+			for feature_name in feature_list:
+				test_features[feature_name.strip()] = df_test[feature_name.strip()]
+		elif args.fidx_end == 0:
 			test_features = df_test.iloc[:, args.fidx_start:]
 		else:
 			test_features = df_test.iloc[:, args.fidx_start:args.fidx_end]
-		test_features = test_features.replace([inf, -inf], 0).replace(nan, 0)
+		test_features = test_features.replace([inf, -inf, nan], 0)
 		test_features = array(test_features)
-		logger.info('Loaded test feature length: %d ' % test_features.shape[0])
+		logger.info('Loaded test feature shape: (%d, %d) ' % test_features.shape)
 		del df_test
 		# Normalize Data
 		from sklearn.preprocessing.data import StandardScaler

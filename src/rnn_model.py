@@ -50,7 +50,8 @@ def getModel(args, input_length, vocab_size, embd, feature_length=0):
 
 	if args.cnn_dim:
 		from util.my_layers import Conv1DWithMasking, MaxOverTime
-		conv1d = Conv1DWithMasking(filters=args.cnn_dim, kernel_size=2, padding='valid', strides=1)
+		conv1dw2 = Conv1DWithMasking(filters=args.cnn_dim, kernel_size=2, padding='valid', strides=1)
+		conv1dw3 = Conv1DWithMasking(filters=args.cnn_dim, kernel_size=3, padding='valid', strides=1)
 		maxpool = MaxOverTime()
 	
 # 	# hidden rnn layer
@@ -96,11 +97,15 @@ def getModel(args, input_length, vocab_size, embd, feature_length=0):
 		merged += [vec1_rnn, vec2_rnn]
 	# Conv Layer
 	if args.cnn_dim:
-		vec1_cnn = conv1d(vec1)
-		vec2_cnn = conv1d(vec2)
-		vec1_cnn = maxpool(vec1_cnn)
-		vec2_cnn = maxpool(vec2_cnn)
-		merged += [vec1_cnn, vec2_cnn]
+		vec1_cnnw2 = conv1dw2(vec1)
+		vec2_cnnw2 = conv1dw2(vec2)
+		vec1_cnnw3 = conv1dw3(vec1)
+		vec2_cnnw3 = conv1dw3(vec2)
+		vec1_cnnw2 = maxpool(vec1_cnnw2)
+		vec2_cnnw2 = maxpool(vec2_cnnw2)
+		vec1_cnnw3 = maxpool(vec1_cnnw3)
+		vec2_cnnw3 = maxpool(vec2_cnnw3)
+		merged += [vec1_cnnw2, vec2_cnnw2, vec1_cnnw3, vec2_cnnw3]
 	
 	if feature_length:
 		feature_input = Input(shape=(feature_length,), dtype='float32')

@@ -16,6 +16,7 @@ parser.add_argument("--train-path", dest="train_path", type=str, metavar='<str>'
 parser.add_argument("--test-path", dest="test_path", type=str, metavar='<str>', default='data/test_sample.csv', help="The path to the test set")
 parser.add_argument("--train-feature-path", dest="train_feature_path", type=str, metavar='<str>', default='', help="The path to the train feature set")
 parser.add_argument("--test-feature-path", dest="test_feature_path", type=str, metavar='<str>', default='', help="The path to the test feature set")
+parser.add_argument("--feature-list", dest="feature_list", type=str, metavar='<str>', default='', help="Feature column list")
 parser.add_argument("--feature-idx-start", dest="fidx_start", type=int, metavar='<int>', default=-3, help="Feature index start (default=-3)")
 parser.add_argument("--feature-idx-end", dest="fidx_end", type=int, metavar='<int>', default=0, help="Feature index end (default=0)")
 parser.add_argument("--out-dir", dest="out_dir_path", type=str, metavar='<str>', default='output', help="The path to the output directory")
