@@ -53,7 +53,7 @@ class Evaluator(Callback):
 			self.print_info(epoch, precision, self.test_loss, self.test_metric)
 			
 			if self.save_model:
-				if self.test_loss > self.best_score:
+				if self.test_loss < self.best_score:
 					self.best_score = self.test_loss
 					self.best_epoch = epoch
 					self.model.save_weights(self.out_dir + '/' + self.timestr + 'best_model_weights.h5', overwrite=True)
