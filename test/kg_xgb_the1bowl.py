@@ -14,8 +14,8 @@ import difflib
 
 # train = pd.read_csv('../data/train_sample.csv')[:100]
 # test = pd.read_csv('../data/test_sample.csv')[:100]
-train = pd.read_csv('../data/train_sample.csv')
-test = pd.read_csv('../data/test_sample.csv')
+train = pd.read_csv('../data/train.csv')
+test = pd.read_csv('../data/test.csv')
 
 tfidf = TfidfVectorizer(stop_words='english', ngram_range=(1, 1))
 #cvect = CountVectorizer(stop_words='english', ngram_range=(1, 1))
