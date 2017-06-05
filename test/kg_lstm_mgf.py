@@ -39,14 +39,34 @@ from tqdm._tqdm import tqdm
 ## set directories and parameters
 ########################################
 BASE_DIR = '../data/'
-EMBEDDING_FILE = BASE_DIR + 'glove.840B.quoraVocab.300d.txt'
-TRAIN_DATA_FILE = BASE_DIR + 'train.csv'
-TEST_DATA_FILE = BASE_DIR + 'test.csv'
+EMBEDDING_FILE = BASE_DIR + 'glove.840B.quoraVocab.300d_sample.txt'
+TRAIN_DATA_FILE = BASE_DIR + 'train_sample.csv'
+TEST_DATA_FILE = BASE_DIR + 'test_sample.csv'
+EPOCHES = 2
+train_feature_path = BASE_DIR + 'train_extra_features_sample.csv'
+test_feature_path = BASE_DIR + 'test_extra_features_sample.csv'
+
+feature_list = "minkowski_distance,skew_q1vec,skew_q2vec, euclidean_distance,braycurtis_distance," + \
+                " norm_wmd, tfidf_wm,tfidf_wm_stops,cosine_distance, wmd,cityblock_distance, " + \
+                "kur_q1vec,kur_q2vec, canberra_distance, char_ratio, " + \
+                "wc_diff,wc_diff_unique,wc_diff_unq_stop,char_diff,char_diff_unq_stop,total_unique_words," + \
+                   "total_unq_words_stop,len_q1,len_q2,len_char_q1,len_char_q2,len_word_q1,len_word_q2," + \
+				   "common_words,fuzz_qratio,fuzz_WRatio,fuzz_partial_ratio,fuzz_partial_token_set_ratio," + \
+				   "fuzz_partial_token_sort_ratio,fuzz_token_set_ratio,fuzz_token_sort_ratio," + \
+				   "q1_q2_intersect,q1_freq,q2_freq"
+fidx_start = -6
+fidx_end = 0
+
+# EMBEDDING_FILE = BASE_DIR + 'glove.840B.quoraVocab.300d.txt'
+# TRAIN_DATA_FILE = BASE_DIR + 'train.csv'
+# TEST_DATA_FILE = BASE_DIR + 'test.csv'
+# train_feature_path = BASE_DIR + 'train_extra_features.csv'
+# test_feature_path = BASE_DIR + 'test_extra_features.csv'
+# EPOCHES = 50
 MAX_SEQUENCE_LENGTH = 30
 MAX_NB_WORDS = 200000
 EMBEDDING_DIM = 300
 VALIDATION_SPLIT = 0.05
-EPOCHES = 50
 BATCH_SIZE = 2048
 
 num_lstm = np.random.randint(175, 275)
@@ -188,37 +208,71 @@ test_ids = np.array(test_ids)
 ## generate leaky features
 ########################################
 
-print("Generating leaky features...")
-
-train_df = pd.read_csv(TRAIN_DATA_FILE)
-test_df = pd.read_csv(TEST_DATA_FILE)
-
-ques = pd.concat([train_df[['question1', 'question2']], \
-		test_df[['question1', 'question2']]], axis=0).reset_index(drop='index')
-q_dict = defaultdict(set)
-for i in range(ques.shape[0]):
-		q_dict[ques.question1[i]].add(ques.question2[i])
-		q_dict[ques.question2[i]].add(ques.question1[i])
-
-def q1_freq(row):
-	return(len(q_dict[row['question1']]))
+if train_feature_path is not '':
+	from pandas import read_csv, DataFrame
+	from numpy import array, inf, nan
+	df_train = read_csv(train_feature_path, encoding="ISO-8859-1")
+	if feature_list is not '':
+		feature_list = feature_list.split(',')
+		train_features = DataFrame()
+		for feature_name in feature_list:
+			train_features[feature_name.strip()] = df_train[feature_name.strip()]
+	elif fidx_end == 0:
+		train_features = df_train.iloc[:, fidx_start:]
+	else:
+		train_features = df_train.iloc[:, fidx_start:fidx_end]
+	feature_length = len(train_features.columns)
+	train_features = train_features.replace([inf, -inf, nan], 0)
+	train_features = array(train_features)
+	print('Loaded train feature shape: (%d, %d) ' % train_features.shape)
+	del df_train
+	leaks = train_features
+	df_test = read_csv(test_feature_path, encoding="ISO-8859-1")
+	if feature_list is not '':
+# 		feature_list = feature_list.split(',')
+		test_features = DataFrame()
+		for feature_name in feature_list:
+			test_features[feature_name.strip()] = df_test[feature_name.strip()]
+	elif fidx_end == 0:
+		test_features = df_test.iloc[:, fidx_start:]
+	else:
+		test_features = df_test.iloc[:, fidx_start:fidx_end]
+	test_features = test_features.replace([inf, -inf, nan], 0)
+	test_features = array(test_features)
+	print('Loaded test feature shape: (%d, %d) ' % test_features.shape)
+	del df_test
+	test_leaks = test_features
+else:
+	print("Generating leaky features...")
+	train_df = pd.read_csv(TRAIN_DATA_FILE)
+	test_df = pd.read_csv(TEST_DATA_FILE)
 	
-def q2_freq(row):
-	return(len(q_dict[row['question2']]))
+	ques = pd.concat([train_df[['question1', 'question2']], \
+			test_df[['question1', 'question2']]], axis=0).reset_index(drop='index')
+	q_dict = defaultdict(set)
+	for i in range(ques.shape[0]):
+			q_dict[ques.question1[i]].add(ques.question2[i])
+			q_dict[ques.question2[i]].add(ques.question1[i])
 	
-def q1_q2_intersect(row):
-	return(len(set(q_dict[row['question1']]).intersection(set(q_dict[row['question2']]))))
-
-train_df['q1_q2_intersect'] = train_df.apply(q1_q2_intersect, axis=1, raw=True)
-train_df['q1_freq'] = train_df.apply(q1_freq, axis=1, raw=True)
-train_df['q2_freq'] = train_df.apply(q2_freq, axis=1, raw=True)
-
-test_df['q1_q2_intersect'] = test_df.apply(q1_q2_intersect, axis=1, raw=True)
-test_df['q1_freq'] = test_df.apply(q1_freq, axis=1, raw=True)
-test_df['q2_freq'] = test_df.apply(q2_freq, axis=1, raw=True)
-
-leaks = train_df[['q1_q2_intersect', 'q1_freq', 'q2_freq']]
-test_leaks = test_df[['q1_q2_intersect', 'q1_freq', 'q2_freq']]
+	def q1_freq(row):
+		return(len(q_dict[row['question1']]))
+		
+	def q2_freq(row):
+		return(len(q_dict[row['question2']]))
+		
+	def q1_q2_intersect(row):
+		return(len(set(q_dict[row['question1']]).intersection(set(q_dict[row['question2']]))))
+	
+	train_df['q1_q2_intersect'] = train_df.apply(q1_q2_intersect, axis=1, raw=True)
+	train_df['q1_freq'] = train_df.apply(q1_freq, axis=1, raw=True)
+	train_df['q2_freq'] = train_df.apply(q2_freq, axis=1, raw=True)
+	
+	test_df['q1_q2_intersect'] = test_df.apply(q1_q2_intersect, axis=1, raw=True)
+	test_df['q1_freq'] = test_df.apply(q1_freq, axis=1, raw=True)
+	test_df['q2_freq'] = test_df.apply(q2_freq, axis=1, raw=True)
+	
+	leaks = train_df[['q1_q2_intersect', 'q1_freq', 'q2_freq']]
+	test_leaks = test_df[['q1_q2_intersect', 'q1_freq', 'q2_freq']]
 
 print("Preparing standard scaler...")
 ss = StandardScaler()
@@ -281,26 +335,26 @@ embedded_sequences_2 = embedding_layer(sequence_2_input)
 y1 = lstm_layer(embedded_sequences_2)
 for_concat += [y1]
 
-#added conv
-from keras.layers.convolutional import Convolution1D
-cnn_dim = 128
-conv1dw2 = Convolution1D(filters=cnn_dim, kernel_size=2, padding='valid', strides=1)
-conv1dw3 = Convolution1D(filters=cnn_dim, kernel_size=3, padding='valid', strides=1)
-vec1_cnnw2 = conv1dw2(embedded_sequences_1)
-vec2_cnnw2 = conv1dw2(embedded_sequences_2)
-vec1_cnnw3 = conv1dw3(embedded_sequences_1)
-vec2_cnnw3 = conv1dw3(embedded_sequences_2)
-from sys import path
-path.append('../')
-from util.my_layers import MaxOverTime
-vec1_cnnw2 = MaxOverTime()(vec1_cnnw2)
-vec2_cnnw2 = MaxOverTime()(vec2_cnnw2)
-vec1_cnnw3 = MaxOverTime()(vec1_cnnw3)
-vec2_cnnw3 = MaxOverTime()(vec2_cnnw3)
-for_concat += [vec1_cnnw2]
-for_concat += [vec2_cnnw2]
-for_concat += [vec1_cnnw3]
-for_concat += [vec2_cnnw3]
+# #added conv
+# from keras.layers.convolutional import Convolution1D
+# cnn_dim = 128
+# conv1dw2 = Convolution1D(filters=cnn_dim, kernel_size=2, padding='valid', strides=1)
+# conv1dw3 = Convolution1D(filters=cnn_dim, kernel_size=3, padding='valid', strides=1)
+# vec1_cnnw2 = conv1dw2(embedded_sequences_1)
+# vec2_cnnw2 = conv1dw2(embedded_sequences_2)
+# vec1_cnnw3 = conv1dw3(embedded_sequences_1)
+# vec2_cnnw3 = conv1dw3(embedded_sequences_2)
+# from sys import path
+# path.append('../')
+# from util.my_layers import MaxOverTime
+# vec1_cnnw2 = MaxOverTime()(vec1_cnnw2)
+# vec2_cnnw2 = MaxOverTime()(vec2_cnnw2)
+# vec1_cnnw3 = MaxOverTime()(vec1_cnnw3)
+# vec2_cnnw3 = MaxOverTime()(vec2_cnnw3)
+# for_concat += [vec1_cnnw2]
+# for_concat += [vec2_cnnw2]
+# for_concat += [vec1_cnnw3]
+# for_concat += [vec2_cnnw3]
 
 leaks_input = Input(shape=(leaks.shape[1],))
 leaks_dense = Dense(num_dense//2, activation=act)(leaks_input)
