@@ -290,6 +290,8 @@ vec1_cnnw2 = conv1dw2(embedded_sequences_1)
 vec2_cnnw2 = conv1dw2(embedded_sequences_2)
 vec1_cnnw3 = conv1dw3(embedded_sequences_1)
 vec2_cnnw3 = conv1dw3(embedded_sequences_2)
+from sys import path
+path.append('../')
 from util.my_layers import MaxOverTime
 vec1_cnnw2 = MaxOverTime()(vec1_cnnw2)
 vec2_cnnw2 = MaxOverTime()(vec2_cnnw2)
