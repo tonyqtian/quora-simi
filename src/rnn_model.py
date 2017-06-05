@@ -29,11 +29,12 @@ def getModel(args, input_length, vocab_size, embd, feature_length=0):
 # 		final_init = 'he_normal'
 # 	else:
 # 		final_init = 'he_uniform'
-		
-	if type(embd) is type(None):
-		embd_layer = Embedding(vocab_size, args.embd_dim, mask_zero=True, trainable=True)
-	else:
-		embd_layer = Embedding(vocab_size, args.embd_dim, mask_zero=True, weights=[embd], trainable=False)
+	from tensorflow import device
+	with device('/cpu:0'):
+		if type(embd) is type(None):
+			embd_layer = Embedding(vocab_size, args.embd_dim, mask_zero=True, trainable=True)
+		else:
+			embd_layer = Embedding(vocab_size, args.embd_dim, mask_zero=True, weights=[embd], trainable=False)
 		
 	if args.bidirectional:
 		rnn_layer = Bidirectional(LSTM(rnn_dim, return_sequences=False, implementation=rnn_opt, 
