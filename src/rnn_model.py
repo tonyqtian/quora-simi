@@ -16,7 +16,6 @@ from keras.models import Model
 from keras.layers.normalization import BatchNormalization
 # from keras.layers import Dense
 from util.my_layers import DenseWithMasking
-from keras.backend.tensorflow_backend import squeeze
 
 logger = logging.getLogger(__name__)
 

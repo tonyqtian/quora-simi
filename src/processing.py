@@ -114,9 +114,13 @@ def train(args):
 			
 	if args.load_model_json:
 		from keras.models import model_from_json
-		from util.my_layers import DenseWithMasking
+		from util.my_layers import DenseWithMasking, Conv1DWithMasking, MaxOverTime, MeanOverTime
 		with open(args.load_model_json, 'r') as json_file:
-			rnnmodel = model_from_json(json_file.read(), custom_objects={"DenseWithMasking": DenseWithMasking})
+			rnnmodel = model_from_json(json_file.read(), 
+									custom_objects={"DenseWithMasking": DenseWithMasking,
+													"Conv1DWithMasking": Conv1DWithMasking,
+													"MaxOverTime": MaxOverTime, 
+													"MeanOverTime": MeanOverTime})
 		logger.info('Loaded model from saved json')
 	else:
 		if args.train_feature_path is not '':
