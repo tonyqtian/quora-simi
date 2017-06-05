@@ -22,6 +22,7 @@ parser.add_argument("--loss", dest="loss", type=str, metavar='<str>', default='b
 parser.add_argument("--activation", dest="activation", type=str, metavar='<str>', default='relu', help="Activation function")
 parser.add_argument("--embedding-dim", dest="embd_dim", type=int, metavar='<int>', default=50, help="Embeddings dimension (default=50)")
 parser.add_argument("--rnn-dim", dest="rnn_dim", type=int, metavar='<int>', default=4, help="RNN dimension (default=4)")
+parser.add_argument("--cnn-dim", dest="cnn_dim", type=int, metavar='<int>', default=4, help="CNN kernels (default=4)")
 parser.add_argument("--rnn-layer", dest="rnn_layer", type=int, metavar='<int>', default=1, help="RNN layers (default=1)")
 parser.add_argument("--mot-layer", dest="mot_layer", action='store_true', help="Add w2v mot input")
 parser.add_argument("--train-batch-size", dest="train_batch_size", type=int, metavar='<int>', default=8, help="Train Batch size (default=8)")

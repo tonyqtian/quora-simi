@@ -33,7 +33,7 @@ def train(args):
 	test_question1, test_maxLen1 = tokenizeIt(test_question1, clean=args.rawMaterial)
 	test_question2, test_maxLen2 = tokenizeIt(test_question2, clean=args.rawMaterial)
 	inputLength = max(train_maxLen1, train_maxLen2, test_maxLen1, test_maxLen2)
-	print('Max input length: ', inputLength)
+	print('Max input length: %d ' % inputLength)
 	inputLength = 32
 	print('Reset max length to 32')
 		
@@ -71,12 +71,12 @@ def train(args):
 		train_features = df_train.iloc[:, -3:]
 		feature_length = len(train_features.columns)
 		train_features = array(train_features)
-		logger.info('Loaded train feature length: ', train_features.shape[0])
+		logger.info('Loaded train feature length: %d ' % train_features.shape[0])
 		del df_train		
 		df_test = read_csv(args.test_feature_path, encoding="ISO-8859-1")
 		test_features = df_test.iloc[:, -3:]
 		test_features = array(test_features)
-		logger.info('Loaded test feature length: ', test_features.shape[0])
+		logger.info('Loaded test feature length: %d ' % test_features.shape[0])
 		del df_test
 		# Normalize Data
 		from sklearn.preprocessing.data import StandardScaler

@@ -16,7 +16,7 @@ from keras.models import Model
 from keras.layers.normalization import BatchNormalization
 # from keras.layers import Dense
 from util.my_layers import DenseWithMasking
-from util.my_layers import MeanOverTime
+from keras.backend.tensorflow_backend import squeeze
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +42,15 @@ def getModel(args, input_length, vocab_size, embd, feature_length=0):
 	else:
 		rnn_layer = LSTM(rnn_dim, return_sequences=False, implementation=rnn_opt, 
 						dropout=dropout_prob, recurrent_dropout=dropout_prob)
-	w2v_dense_layer = TimeDistributed(DenseWithMasking(args.embd_dim*2//3))
+
+	if args.mot_layer:
+		w2v_dense_layer = TimeDistributed(DenseWithMasking(args.embd_dim*2//3))
+
+	if args.cnn_dim:
+		from util.my_layers import Conv1DWithMasking, MaxPooling1DWithMasking
+		conv1d = Conv1DWithMasking(filters=args.cnn_dim, kernel_size=2, padding='valid', strides=1)
+		maxpool = MaxPooling1DWithMasking(pool_size=input_length-1, padding='valid')
+	
 # 	# hidden rnn layer
 # 	from keras.models import Sequential
 # 	rnn_model = Sequential()
@@ -72,16 +80,28 @@ def getModel(args, input_length, vocab_size, embd, feature_length=0):
 	vec1 = embd_layer(sequence_1_input)
 	vec2 = embd_layer(sequence_2_input)
 	merged = []
+	
 	if args.mot_layer:
+		from util.my_layers import MeanOverTime
 		vec1_w2v = w2v_dense_layer(vec1)
 		vec2_w2v = w2v_dense_layer(vec2)
 		vec1_w2v = MeanOverTime()(vec1_w2v)
 		vec2_w2v = MeanOverTime()(vec2_w2v)
 		merged += [vec1_w2v, vec2_w2v]
+		
 	if args.rnn_layer:
 		vec1_rnn = rnn_layer(vec1)
 		vec2_rnn = rnn_layer(vec2)
 		merged += [vec1_rnn, vec2_rnn]
+	# Conv Layer
+	if args.cnn_dim:
+		vec1_cnn = conv1d(vec1)
+		vec2_cnn = conv1d(vec2)
+		vec1_cnn = maxpool(vec1_cnn)
+		vec2_cnn = maxpool(vec2_cnn)
+		vec1_cnn = squeeze(vec1_cnn, axis=1)
+		vec2_cnn = squeeze(vec2_cnn, axis=1)
+		merged += [vec1_cnn, vec2_cnn]
 	
 	if feature_length:
 		feature_input = Input(shape=(feature_length,), dtype='float32')

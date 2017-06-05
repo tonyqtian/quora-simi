@@ -4,7 +4,7 @@ Created on Mar 24, 2017
 @author: tonyq
 '''
 from keras.layers.core import Dense
-from keras.layers.pooling import AveragePooling1D
+from keras.layers.pooling import AveragePooling1D, MaxPool1D
 from keras.layers.convolutional import Convolution1D
 from keras.engine.topology import Layer
 from keras.backend import sum, cast, floatx, mean
@@ -24,7 +24,15 @@ class AveragePooling1DWithMasking(AveragePooling1D):
 	
 	def compute_mask(self, x, mask=None):
 		return None
-			
+
+class MaxPooling1DWithMasking(MaxPool1D):
+	def __init__(self, pool_size, **kwargs):
+		self.supports_masking = True
+		super(MaxPooling1DWithMasking, self).__init__(pool_size, **kwargs)
+	
+	def compute_mask(self, x, mask=None):
+		return None
+				
 class Conv1DWithMasking(Convolution1D):
 	def __init__(self, **kwargs):
 		self.supports_masking = True
