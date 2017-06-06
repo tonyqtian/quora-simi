@@ -56,7 +56,8 @@ feature_list = "minkowski_distance,skew_q1vec,skew_q2vec, euclidean_distance,bra
                    "total_unq_words_stop,len_q1,len_q2,len_char_q1,len_char_q2,len_word_q1,len_word_q2," + \
 				   "common_words,fuzz_qratio,fuzz_WRatio,fuzz_partial_ratio,fuzz_partial_token_set_ratio," + \
 				   "fuzz_partial_token_sort_ratio,fuzz_token_set_ratio,fuzz_token_sort_ratio," + \
-				   "q1_q2_intersect,q1_freq,q2_freq"
+				   "q1_q2_intersect,q1_freq,q2_freq," + \
+				   "jaccard, word_match, wc_ratio_unique_stop, wc_ratio, wc_ratio_unique"
 fidx_start = -6
 fidx_end = 0
 bowl_feat_list = "z_match_ratio,z_tfidf_mean1,z_tfidf_mean2," + \
@@ -67,10 +68,10 @@ TRAIN_DATA_FILE = BASE_DIR + 'train.csv'
 TEST_DATA_FILE = BASE_DIR + 'test.csv'
 train_feature_path = BASE_DIR + 'train_extra_features.csv'
 test_feature_path = BASE_DIR + 'test_extra_features.csv'
-# train_bowl_feature_path = BASE_DIR + 'train_features_1bowl.csv'
-# test_bowl_feature_path = BASE_DIR + 'test_features_1bowl.csv'
-train_bowl_feature_path = ''
-test_bowl_feature_path = ''
+train_bowl_feature_path = BASE_DIR + 'train_features_1bowl.csv'
+test_bowl_feature_path = BASE_DIR + 'test_features_1bowl.csv'
+# train_bowl_feature_path = ''
+# test_bowl_feature_path = ''
 EPOCHES = 50
 MAX_SEQUENCE_LENGTH = 30
 MAX_NB_WORDS = 200000
@@ -371,26 +372,26 @@ embedded_sequences_2 = embedding_layer(sequence_2_input)
 y1 = lstm_layer(embedded_sequences_2)
 for_concat += [y1]
 
-#added conv
-from keras.layers.convolutional import Convolution1D
-cnn_dim = 128
-conv1dw2 = Convolution1D(filters=cnn_dim, kernel_size=2, padding='valid', strides=1)
-conv1dw3 = Convolution1D(filters=cnn_dim, kernel_size=3, padding='valid', strides=1)
-vec1_cnnw2 = conv1dw2(embedded_sequences_1)
-vec2_cnnw2 = conv1dw2(embedded_sequences_2)
-vec1_cnnw3 = conv1dw3(embedded_sequences_1)
-vec2_cnnw3 = conv1dw3(embedded_sequences_2)
-from sys import path
-path.append('../')
-from util.my_layers import MaxOverTime
-vec1_cnnw2 = MaxOverTime()(vec1_cnnw2)
-vec2_cnnw2 = MaxOverTime()(vec2_cnnw2)
-vec1_cnnw3 = MaxOverTime()(vec1_cnnw3)
-vec2_cnnw3 = MaxOverTime()(vec2_cnnw3)
-for_concat += [vec1_cnnw2]
-for_concat += [vec2_cnnw2]
-for_concat += [vec1_cnnw3]
-for_concat += [vec2_cnnw3]
+# #added conv
+# from keras.layers.convolutional import Convolution1D
+# cnn_dim = 128
+# conv1dw2 = Convolution1D(filters=cnn_dim, kernel_size=2, padding='valid', strides=1)
+# conv1dw3 = Convolution1D(filters=cnn_dim, kernel_size=3, padding='valid', strides=1)
+# vec1_cnnw2 = conv1dw2(embedded_sequences_1)
+# vec2_cnnw2 = conv1dw2(embedded_sequences_2)
+# vec1_cnnw3 = conv1dw3(embedded_sequences_1)
+# vec2_cnnw3 = conv1dw3(embedded_sequences_2)
+# from sys import path
+# path.append('../')
+# from util.my_layers import MaxOverTime
+# vec1_cnnw2 = MaxOverTime()(vec1_cnnw2)
+# vec2_cnnw2 = MaxOverTime()(vec2_cnnw2)
+# vec1_cnnw3 = MaxOverTime()(vec1_cnnw3)
+# vec2_cnnw3 = MaxOverTime()(vec2_cnnw3)
+# for_concat += [vec1_cnnw2]
+# for_concat += [vec2_cnnw2]
+# for_concat += [vec1_cnnw3]
+# for_concat += [vec2_cnnw3]
 
 leaks_input = Input(shape=(leaks.shape[1],))
 leaks_dense = Dense(num_dense//2, activation=act)(leaks_input)
