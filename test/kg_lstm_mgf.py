@@ -16,6 +16,7 @@ import codecs
 import time
 import numpy as np
 import pandas as pd
+import pickle as pkl
 
 # from string import punctuation
 from collections import defaultdict
@@ -72,6 +73,11 @@ train_bowl_feature_path = BASE_DIR + 'train_features_1bowl.csv'
 test_bowl_feature_path = BASE_DIR + 'test_features_1bowl.csv'
 # train_bowl_feature_path = ''
 # test_bowl_feature_path = ''
+load_train_test_pkl = ''
+load_embd_pkl = ''
+# load_train_test_pkl = BASE_DIR + 'input_train_test.pkl'
+# load_embd_pkl = BASE_DIR + 'embd_dump.pkl'
+
 EPOCHES = 50
 MAX_SEQUENCE_LENGTH = 30
 MAX_NB_WORDS = 200000
@@ -81,7 +87,7 @@ BATCH_SIZE = 2048
 
 num_lstm = np.random.randint(175, 275)
 num_dense = np.random.randint(100, 150)
-rate_drop_lstm = 0.35 + np.random.rand() * 0.15
+rate_drop_lstm = 0.60 + np.random.rand() * 0.15
 rate_drop_dense = 0.25 + np.random.rand() * 0.15
 
 act = 'relu'
@@ -91,22 +97,6 @@ timestr = time.strftime("%Y%m%d-%H%M%S-")
 output_dir = '../output/' + time.strftime("%m%d")
 # mkdir(output_dir)
 STAMP = 'lstm_%d_%d_%.2f_%.2f'%(num_lstm, num_dense, rate_drop_lstm, rate_drop_dense)
-
-########################################
-## index word vectors
-########################################
-print('Indexing word vectors')
-
-embeddings_index = {}
-with open(EMBEDDING_FILE, 'r', encoding='utf8') as f:
-	count = 0
-	for line in tqdm(f):
-		values = line.split()
-		word = values[0]
-		coefs = np.asarray(values[1:], dtype='float32')
-		embeddings_index[word] = coefs
-
-print('Found %d word vectors of glove.' % len(embeddings_index))
 
 ########################################
 ## process texts in datasets
@@ -169,51 +159,97 @@ def text_to_wordlist(text, remove_stopwords=False, stem_words=False):
 	# Return a list of words
 	return(text)
 
-texts_1 = [] 
-texts_2 = []
-labels = []
-with codecs.open(TRAIN_DATA_FILE, encoding='utf-8') as f:
-	reader = csv.reader(f, delimiter=',')
-	header = next(reader)
-	for values in tqdm(reader):
-		texts_1.append(text_to_wordlist(values[3]))
-		texts_2.append(text_to_wordlist(values[4]))
-		labels.append(int(values[5]))
-print('Found %s texts in train.csv' % len(texts_1))
-
-test_texts_1 = []
-test_texts_2 = []
-test_ids = []
-with codecs.open(TEST_DATA_FILE, encoding='utf-8') as f:
-	reader = csv.reader(f, delimiter=',')
-	header = next(reader)
-	for values in tqdm(reader):
-		test_texts_1.append(text_to_wordlist(values[1]))
-		test_texts_2.append(text_to_wordlist(values[2]))
-		test_ids.append(values[0])
-print('Found %s texts in test.csv' % len(test_texts_1))
-
-tokenizer = Tokenizer(num_words=MAX_NB_WORDS)
-tokenizer.fit_on_texts(texts_1 + texts_2 + test_texts_1 + test_texts_2)
-
-sequences_1 = tokenizer.texts_to_sequences(texts_1)
-sequences_2 = tokenizer.texts_to_sequences(texts_2)
-test_sequences_1 = tokenizer.texts_to_sequences(test_texts_1)
-test_sequences_2 = tokenizer.texts_to_sequences(test_texts_2)
-
-word_index = tokenizer.word_index
-print('Found %s unique tokens' % len(word_index))
-
-data_1 = pad_sequences(sequences_1, maxlen=MAX_SEQUENCE_LENGTH)
-data_2 = pad_sequences(sequences_2, maxlen=MAX_SEQUENCE_LENGTH)
-labels = np.array(labels)
-print('Shape of data tensor:', data_1.shape)
-print('Shape of label tensor:', labels.shape)
-
-test_data_1 = pad_sequences(test_sequences_1, maxlen=MAX_SEQUENCE_LENGTH)
-test_data_2 = pad_sequences(test_sequences_2, maxlen=MAX_SEQUENCE_LENGTH)
-test_ids = np.array(test_ids)
-
+if load_train_test_pkl is '':
+	texts_1 = [] 
+	texts_2 = []
+	labels = []
+	with codecs.open(TRAIN_DATA_FILE, encoding='utf-8') as f:
+		reader = csv.reader(f, delimiter=',')
+		header = next(reader)
+		for values in tqdm(reader):
+			texts_1.append(text_to_wordlist(values[3]))
+			texts_2.append(text_to_wordlist(values[4]))
+			labels.append(int(values[5]))
+	print('Found %s texts in train.csv' % len(texts_1))
+	
+	test_texts_1 = []
+	test_texts_2 = []
+	test_ids = []
+	with codecs.open(TEST_DATA_FILE, encoding='utf-8') as f:
+		reader = csv.reader(f, delimiter=',')
+		header = next(reader)
+		for values in tqdm(reader):
+			test_texts_1.append(text_to_wordlist(values[1]))
+			test_texts_2.append(text_to_wordlist(values[2]))
+			test_ids.append(values[0])
+	print('Found %s texts in test.csv' % len(test_texts_1))
+	
+	tokenizer = Tokenizer(num_words=MAX_NB_WORDS)
+	tokenizer.fit_on_texts(texts_1 + texts_2 + test_texts_1 + test_texts_2)
+	
+	sequences_1 = tokenizer.texts_to_sequences(texts_1)
+	sequences_2 = tokenizer.texts_to_sequences(texts_2)
+	test_sequences_1 = tokenizer.texts_to_sequences(test_texts_1)
+	test_sequences_2 = tokenizer.texts_to_sequences(test_texts_2)
+	
+	word_index = tokenizer.word_index
+	print('Found %s unique tokens' % len(word_index))
+	
+	data_1 = pad_sequences(sequences_1, maxlen=MAX_SEQUENCE_LENGTH)
+	data_2 = pad_sequences(sequences_2, maxlen=MAX_SEQUENCE_LENGTH)
+	labels = np.array(labels)
+	print('Shape of data tensor:', data_1.shape)
+	print('Shape of label tensor:', labels.shape)
+	
+	test_data_1 = pad_sequences(test_sequences_1, maxlen=MAX_SEQUENCE_LENGTH)
+	test_data_2 = pad_sequences(test_sequences_2, maxlen=MAX_SEQUENCE_LENGTH)
+	test_ids = np.array(test_ids)
+	
+	with open(output_dir + '/'+ timestr + 'input_train_test.pkl', 'wb') as input_file:
+		print('Dumping processed input to pickle...')
+		pkl.dump((data_1, data_2, labels, test_data_1, test_data_2, test_ids, word_index), input_file)
+else:
+	print('Loading input file from pickle...')
+	data_1, data_2, labels, test_data_1, test_data_2, test_ids, word_index = pkl.load(load_train_test_pkl)
+	
+	
+if load_embd_pkl is '':
+	########################################
+	## index word vectors
+	########################################
+	print('Indexing word vectors')
+	
+	embeddings_index = {}
+	with open(EMBEDDING_FILE, 'r', encoding='utf8') as f:
+		count = 0
+		for line in tqdm(f):
+			values = line.split()
+			word = values[0]
+			coefs = np.asarray(values[1:], dtype='float32')
+			embeddings_index[word] = coefs
+	
+	print('Found %d word vectors of glove.' % len(embeddings_index))
+	
+	########################################
+	## prepare embeddings
+	########################################
+	print('Preparing embedding matrix')
+	nb_words = min(MAX_NB_WORDS, len(word_index))+1
+	
+	embedding_matrix = np.zeros((nb_words, EMBEDDING_DIM))
+	for word, i in tqdm(word_index.items()):
+		embedding_vector = embeddings_index.get(word)
+		if embedding_vector is not None:
+			embedding_matrix[i] = embedding_vector
+	print('Null word embeddings: %d' % np.sum(np.sum(embedding_matrix, axis=1) == 0))
+	
+	with open(output_dir + '/'+ timestr + 'embd_dump.pkl', 'wb') as embd_file:
+		print('Dumping word embedding to pickle...')
+		pkl.dump(embedding_matrix, embd_file)
+else:
+	print('Loading word embedding from pickle...')
+	embedding_matrix = pkl.load(load_embd_pkl)
+	
 ########################################
 ## generate leaky features
 ########################################
@@ -316,20 +352,6 @@ ss = StandardScaler()
 ss.fit(np.vstack((leaks, test_leaks)))
 leaks = ss.transform(leaks)
 test_leaks = ss.transform(test_leaks)
-
-########################################
-## prepare embeddings
-########################################
-print('Preparing embedding matrix')
-
-nb_words = min(MAX_NB_WORDS, len(word_index))+1
-
-embedding_matrix = np.zeros((nb_words, EMBEDDING_DIM))
-for word, i in tqdm(word_index.items()):
-	embedding_vector = embeddings_index.get(word)
-	if embedding_vector is not None:
-		embedding_matrix[i] = embedding_vector
-print('Null word embeddings: %d' % np.sum(np.sum(embedding_matrix, axis=1) == 0))
 
 ########################################
 ## sample train/validation data
