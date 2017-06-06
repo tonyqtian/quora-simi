@@ -81,8 +81,8 @@ BATCH_SIZE = 2048
 
 num_lstm = np.random.randint(175, 275)
 num_dense = np.random.randint(100, 150)
-rate_drop_lstm = 0.15 + np.random.rand() * 0.25
-rate_drop_dense = 0.15 + np.random.rand() * 0.25
+rate_drop_lstm = 0.35 + np.random.rand() * 0.15
+rate_drop_dense = 0.25 + np.random.rand() * 0.15
 
 act = 'relu'
 re_weight = True # whether to re-weight classes to fit the 17.5% share in test set
