@@ -369,26 +369,26 @@ embedded_sequences_2 = embedding_layer(sequence_2_input)
 y1 = lstm_layer(embedded_sequences_2)
 for_concat += [y1]
 
-# #added conv
-# from keras.layers.convolutional import Convolution1D
-# cnn_dim = 128
-# conv1dw2 = Convolution1D(filters=cnn_dim, kernel_size=2, padding='valid', strides=1)
-# conv1dw3 = Convolution1D(filters=cnn_dim, kernel_size=3, padding='valid', strides=1)
-# vec1_cnnw2 = conv1dw2(embedded_sequences_1)
-# vec2_cnnw2 = conv1dw2(embedded_sequences_2)
-# vec1_cnnw3 = conv1dw3(embedded_sequences_1)
-# vec2_cnnw3 = conv1dw3(embedded_sequences_2)
-# from sys import path
-# path.append('../')
-# from util.my_layers import MaxOverTime
-# vec1_cnnw2 = MaxOverTime()(vec1_cnnw2)
-# vec2_cnnw2 = MaxOverTime()(vec2_cnnw2)
-# vec1_cnnw3 = MaxOverTime()(vec1_cnnw3)
-# vec2_cnnw3 = MaxOverTime()(vec2_cnnw3)
-# for_concat += [vec1_cnnw2]
-# for_concat += [vec2_cnnw2]
-# for_concat += [vec1_cnnw3]
-# for_concat += [vec2_cnnw3]
+#added conv
+from keras.layers.convolutional import Convolution1D
+cnn_dim = 128
+conv1dw2 = Convolution1D(filters=cnn_dim, kernel_size=2, padding='valid', strides=1)
+conv1dw3 = Convolution1D(filters=cnn_dim, kernel_size=3, padding='valid', strides=1)
+vec1_cnnw2 = conv1dw2(embedded_sequences_1)
+vec2_cnnw2 = conv1dw2(embedded_sequences_2)
+vec1_cnnw3 = conv1dw3(embedded_sequences_1)
+vec2_cnnw3 = conv1dw3(embedded_sequences_2)
+from sys import path
+path.append('../')
+from util.my_layers import MaxOverTime
+vec1_cnnw2 = MaxOverTime()(vec1_cnnw2)
+vec2_cnnw2 = MaxOverTime()(vec2_cnnw2)
+vec1_cnnw3 = MaxOverTime()(vec1_cnnw3)
+vec2_cnnw3 = MaxOverTime()(vec2_cnnw3)
+for_concat += [vec1_cnnw2]
+for_concat += [vec2_cnnw2]
+for_concat += [vec1_cnnw3]
+for_concat += [vec2_cnnw3]
 
 leaks_input = Input(shape=(leaks.shape[1],))
 leaks_dense = Dense(num_dense//2, activation=act)(leaks_input)
@@ -396,6 +396,10 @@ for_concat += [leaks_dense]
 
 # merged = concatenate([x1, y1, leaks_dense])
 merged = concatenate(for_concat)
+merged = BatchNormalization()(merged)
+merged = Dropout(rate_drop_dense)(merged)
+
+merged = Dense(num_dense*2, activation=act)(merged)
 merged = BatchNormalization()(merged)
 merged = Dropout(rate_drop_dense)(merged)
 
