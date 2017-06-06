@@ -87,7 +87,7 @@ BATCH_SIZE = 2048
 
 num_lstm = np.random.randint(175, 275)
 num_dense = np.random.randint(100, 150)
-rate_drop_lstm = 0.60 + np.random.rand() * 0.15
+rate_drop_lstm = 0.45 + np.random.rand() * 0.15
 rate_drop_dense = 0.25 + np.random.rand() * 0.15
 
 act = 'relu'
@@ -449,6 +449,9 @@ model = Model(inputs=[sequence_1_input, sequence_2_input, leaks_input], outputs=
 model.compile(loss='binary_crossentropy', optimizer='nadam', metrics=['acc'])
 model.summary()
 print(STAMP)
+print('Saving model config')
+with open(output_dir + '/' + timestr + STAMP + '.json', 'w') as arch:
+	arch.write(model.to_json(indent=2))
 
 early_stopping =EarlyStopping(monitor='val_loss', patience=3)
 bst_model_path = output_dir + '/' + timestr + STAMP + '.h5'
