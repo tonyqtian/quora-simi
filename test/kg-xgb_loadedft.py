@@ -51,11 +51,12 @@ def main():
 		extra_feature_list = args.extra_feature_list.split(',')
 		for feature_name in extra_feature_list:
 			train_features[feature_name.strip()] = df_train[feature_name.strip()]
-			
+	del df_train
 	print('Final train columns', train_features.columns)
 	print('Shape: ', train_features.shape)
 	
 	X_train, X_valid, y_train, y_valid = train_test_split(train_features, y_train, test_size=0.06, random_state=4242)
+	del train_features
 	
 	#UPDownSampling
 	print("Train Sampling...")
@@ -107,7 +108,7 @@ def main():
 		extra_feature_list = args.extra_feature_list.split(',')
 		for feature_name in extra_feature_list:
 			test_features[feature_name.strip()] = df_test[feature_name.strip()]
-			
+	
 	print('Final test columns ', test_features.columns)
 	print('Shape: ', test_features.shape)
 
