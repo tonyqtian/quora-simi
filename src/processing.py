@@ -9,10 +9,21 @@ matplotlib.use('Agg')
 from tqdm._tqdm import tqdm
 import logging, time
 import pickle as pkl
+from numpy import array, squeeze, vstack, inf, nan
+from pandas import read_csv, DataFrame
+
 from util.utils import setLogger, mkdir, print_args
+from util.data_processing import get_pdTable, text_cleaner, embdReader
+
+from keras.preprocessing.text import Tokenizer
+from keras.utils import plot_model
+from keras.optimizers import RMSprop
+from keras.preprocessing.sequence import pad_sequences
+from sklearn.preprocessing.data import StandardScaler
+# choose model 
+from src.rnn_model import getModel
 
 logger = logging.getLogger(__name__)
-
 MAX_NB_WORDS = 150000
 
 def train(args):
@@ -22,58 +33,64 @@ def train(args):
 	setLogger(timestr, out_dir=output_dir)
 	print_args(args)
 	
-	# process train and test data
-	from util.data_processing import get_pdTable
-	logger.info('Loading training file...')
-	_, train_question1, train_question2, train_y = get_pdTable(args.train_path)
-	logger.info('Train csv: %d line loaded ' % len(train_question1))
-	logger.info('Loading test file...')
-	test_ids, test_question1, test_question2 = get_pdTable(args.test_path, notag=True)
-# 	if args.predict_test:
-# 		test_ids, test_question1, test_question2 = get_pdTable(args.test_path, notag=True)
-# 	else:
-# 		test_ids, test_question1, test_question2, test_y = get_pdTable(args.test_path)
-	logger.info('Test csv: %d line loaded ' % len(test_question1))
-
-	from util.data_processing import text_cleaner
-	logger.info('Text cleaning... ')
-	train_question1, train_maxLen1 = text_cleaner(train_question1)
-	train_question2, train_maxLen2 = text_cleaner(train_question2)
-	test_question1, test_maxLen1 = text_cleaner(test_question1)
-	test_question2, test_maxLen2 = text_cleaner(test_question2)
-# 	train_question1, train_maxLen1 = tokenizeIt(train_question1, clean=args.rawMaterial)
-# 	train_question2, train_maxLen2 = tokenizeIt(train_question2, clean=args.rawMaterial)
-# 	test_question1, test_maxLen1 = tokenizeIt(test_question1, clean=args.rawMaterial)
-# 	test_question2, test_maxLen2 = tokenizeIt(test_question2, clean=args.rawMaterial)
-	inputLength = max(train_maxLen1, train_maxLen2, test_maxLen1, test_maxLen2)
-	logger.info('Max input length: %d ' % inputLength)
-	inputLength = 32
-	logger.info('Reset max length to 32')
-
-	from keras.preprocessing.text import Tokenizer
-	tokenizer = Tokenizer(num_words=MAX_NB_WORDS)
-	tokenizer.fit_on_texts(train_question1 + train_question2 + test_question1 + test_question2)
+	if args.load_input_pkl is '':
+		# process train and test data
+		logger.info('Loading training file...')
+		_, train_question1, train_question2, train_y = get_pdTable(args.train_path)
+		logger.info('Train csv: %d line loaded ' % len(train_question1))
+		logger.info('Loading test file...')
+		test_ids, test_question1, test_question2 = get_pdTable(args.test_path, notag=True)
+	# 	if args.predict_test:
+	# 		test_ids, test_question1, test_question2 = get_pdTable(args.test_path, notag=True)
+	# 	else:
+	# 		test_ids, test_question1, test_question2, test_y = get_pdTable(args.test_path)
+		logger.info('Test csv: %d line loaded ' % len(test_question1))
 	
-	sequences_1 = tokenizer.texts_to_sequences(train_question1)
-	sequences_2 = tokenizer.texts_to_sequences(train_question2)
-	test_sequences_1 = tokenizer.texts_to_sequences(test_question1)
-	test_sequences_2 = tokenizer.texts_to_sequences(test_question2)
+		logger.info('Text cleaning... ')
+		train_question1, train_maxLen1 = text_cleaner(train_question1)
+		train_question2, train_maxLen2 = text_cleaner(train_question2)
+		test_question1, test_maxLen1 = text_cleaner(test_question1)
+		test_question2, test_maxLen2 = text_cleaner(test_question2)
+	# 	train_question1, train_maxLen1 = tokenizeIt(train_question1, clean=args.rawMaterial)
+	# 	train_question2, train_maxLen2 = tokenizeIt(train_question2, clean=args.rawMaterial)
+	# 	test_question1, test_maxLen1 = tokenizeIt(test_question1, clean=args.rawMaterial)
+	# 	test_question2, test_maxLen2 = tokenizeIt(test_question2, clean=args.rawMaterial)
+		inputLength = max(train_maxLen1, train_maxLen2, test_maxLen1, test_maxLen2)
+		logger.info('Max input length: %d ' % inputLength)
+		inputLength = 32
+		logger.info('Reset max length to 32')
 	
-	word_index = tokenizer.word_index
-	logger.info('Found %s unique tokens' % len(word_index))
-	
-	from numpy import array
-	from keras.preprocessing.sequence import pad_sequences
-	train_x1 = pad_sequences(sequences_1, maxlen=inputLength)
-	train_x2 = pad_sequences(sequences_2, maxlen=inputLength)
-	train_y = array(train_y)
-	logger.info('Shape of data tensor: (%d, %d)' % train_x1.shape)
-	logger.info('Shape of label tensor: (%d, )' % train_y.shape)
-	
-	test_x1 = pad_sequences(test_sequences_1, maxlen=inputLength)
-	test_x2 = pad_sequences(test_sequences_2, maxlen=inputLength)
-	test_ids = array(test_ids)
-
+		tokenizer = Tokenizer(num_words=MAX_NB_WORDS)
+		tokenizer.fit_on_texts(train_question1 + train_question2 + test_question1 + test_question2)
+		
+		sequences_1 = tokenizer.texts_to_sequences(train_question1)
+		sequences_2 = tokenizer.texts_to_sequences(train_question2)
+		test_sequences_1 = tokenizer.texts_to_sequences(test_question1)
+		test_sequences_2 = tokenizer.texts_to_sequences(test_question2)
+		del train_question1, train_question2, test_question1, test_question2
+		
+		word_index = tokenizer.word_index
+		logger.info('Found %s unique tokens' % len(word_index))
+		
+		train_x1 = pad_sequences(sequences_1, maxlen=inputLength)
+		train_x2 = pad_sequences(sequences_2, maxlen=inputLength)
+		train_y = array(train_y)
+		logger.info('Shape of data tensor: (%d, %d)' % train_x1.shape)
+		logger.info('Shape of label tensor: (%d, )' % train_y.shape)
+		
+		test_x1 = pad_sequences(test_sequences_1, maxlen=inputLength)
+		test_x2 = pad_sequences(test_sequences_2, maxlen=inputLength)
+		test_ids = array(test_ids)
+		del sequences_1, sequences_2, test_sequences_1, test_sequences_2
+		with open(output_dir + '/'+ timestr + 'input_train_test.pkl', 'wb') as input_file:
+			logger.info('Dumping processed input to pickle...')
+			pkl.dump((train_x1, train_x2, train_y, test_x1, test_x2, test_ids, word_index), input_file)
+	else:
+		with open(args.load_input_pkl, 'rb') as input_file:
+			train_x1, train_x2, train_y, test_x1, test_x2, test_ids, word_index = pkl.load(input_file)
+			logger.info('Shape of data tensor: (%d, %d)' % train_x1.shape)
+			logger.info('Shape of label tensor: (%d, )' % train_y.shape)
+			
 	if args.w2v:
 		if args.w2v.endswith('.pkl'):
 			with open(args.w2v, 'rb') as embd_file:
@@ -83,7 +100,6 @@ def train(args):
 					logger.info('WARNING: reversed dict len incorrect %d , but word dict len %d ' % \
 							(len(vocabReverseDict), len(word_index)))
 		else: 
-			from util.data_processing import embdReader
 			logger.info('Loading word embedding from text file...')
 			embdw2v, vocabReverseDict = embdReader(args.w2v, args.embd_dim, word_index, MAX_NB_WORDS)
 			with open(output_dir + '/'+ timestr + 'embd_dump.' + str(args.embd_dim) + 'd.pkl', 'wb') as embd_file:
@@ -121,8 +137,7 @@ def train(args):
 # 	test_x2 = word2num(test_question2, vocabDict, unk, inputLength, padding='pre')
 	
 	if args.train_feature_path is not '':
-		from pandas import read_csv, DataFrame
-		from numpy import inf, nan
+		logger.info('Loading train features from file %s ' % args.train_feature_path)
 		df_train = read_csv(args.train_feature_path, encoding="ISO-8859-1")
 		if args.feature_list is not '':
 			feature_list = args.feature_list.split(',')
@@ -137,7 +152,9 @@ def train(args):
 		train_features = train_features.replace([inf, -inf, nan], 0)
 		train_features = array(train_features)
 		logger.info('Loaded train feature shape: (%d, %d) ' % train_features.shape)
-		del df_train		
+		del df_train
+
+		logger.info('Loading test features from file %s ' % args.test_feature_path)
 		df_test = read_csv(args.test_feature_path, encoding="ISO-8859-1")
 		if args.feature_list is not '':
 			feature_list = args.feature_list.split(',')
@@ -153,15 +170,12 @@ def train(args):
 		logger.info('Loaded test feature shape: (%d, %d) ' % test_features.shape)
 		del df_test
 		# Normalize Data
-		from sklearn.preprocessing.data import StandardScaler
-		from numpy import vstack
 		ss = StandardScaler()
 		ss.fit(vstack((train_features, test_features)))
 		train_features = ss.transform(train_features)
 		test_features = ss.transform(test_features)
 		del ss
-	# choose model 
-	from src.rnn_model import getModel
+		logger.info('Features normalized ')
 	
 # 	# Dump vocab
 # 	if not args.load_vocab_from_file:
@@ -189,7 +203,6 @@ def train(args):
 		logger.info('Loaded model from saved weights')
 		
 	if args.optimizer == 'rmsprop':
-		from keras.optimizers import RMSprop
 		optimizer = RMSprop(lr=args.learning_rate)
 	else:
 		optimizer = args.optimizer
@@ -201,7 +214,6 @@ def train(args):
 	if args.save_model:
 		## Plotting model
 		logger.info('Plotting model architecture')
-		from keras.utils import plot_model
 		plot_model(rnnmodel, to_file = output_dir + '/' + timestr + 'model_plot.png')
 		logger.info('  Done')
 		
@@ -246,7 +258,6 @@ def train(args):
 		rnnmodel.load_weights(bst_model_path)
 		logger.info("Predicting test file result...")
 		preds = rnnmodel.predict(test_x, batch_size=args.eval_batch_size, verbose=1)
-		from numpy import squeeze
 		preds = squeeze(preds)
 		logger.info('Write predictions into file... Total line: ', len(preds))
 		import csv
@@ -274,7 +285,6 @@ def inference(args):
 	print_args(args)
 	
 	# process train and test data
-	from util.data_processing import get_pdTable
 	_, train_question1, train_question2, train_y = get_pdTable(args.train_path)
 	_, test_question1, test_question2, test_y = get_pdTable(args.test_path)
 	
