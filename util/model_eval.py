@@ -13,6 +13,36 @@ logger = logging.getLogger(__name__)
 
 judgeInfo = {False:'Incorect', True:''}
 
+class PlotPic(Callback):
+	def __init__(self, args, out_dir, timestr, metric):
+		self.out_dir = out_dir
+		self.metric = metric
+		self.val_metric = 'val_' + metric
+		self.timestr = timestr
+		self.losses = []
+		self.accs = []
+		self.val_accs = []
+		self.val_losses = []
+		
+	def on_epoch_end(self, epoch, logs={}):
+		self.losses.append(logs.get('loss'))
+		self.val_losses.append(logs.get('val_loss'))
+		self.accs.append(logs.get(self.metric))
+		self.val_accs.append(logs.get(self.val_metric))
+		self.plothem()
+		return
+
+	def plothem(self):
+		training_epochs = [i+1 for i in range(len(self.losses))]
+		plt.plot(training_epochs, self.losses, 'b', label='Train Loss')
+		plt.plot(training_epochs, self.accs, 'r.', label='Train Metric')
+		plt.plot(training_epochs, self.val_losses, 'g', label='Valid Loss')
+		plt.plot(training_epochs, self.val_accs, 'y.', label='Valid Metric')
+		plt.legend()
+		plt.xlabel('epochs')
+		plt.savefig(self.out_dir + '/' + self.timestr + 'LossAccuracy.png')
+		plt.close()
+			
 class Evaluator(Callback):
 	
 	def __init__(self, args, out_dir, timestr, metric, test_x, test_y, reVocab):
@@ -52,12 +82,12 @@ class Evaluator(Callback):
 						 preds[idx:idx+self.evl_pred], self.test_y[idx:idx+self.evl_pred])
 			self.print_info(epoch, precision, self.test_loss, self.test_metric)
 			
-			if self.save_model:
-				if self.test_loss < self.best_score:
-					self.best_score = self.test_loss
-					self.best_epoch = epoch
-					self.model.save_weights(self.out_dir + '/' + self.timestr + 'best_model_weights.h5', overwrite=True)
-				self.print_best()
+# 			if self.save_model:
+# 				if self.test_loss < self.best_score:
+# 					self.best_score = self.test_loss
+# 					self.best_epoch = epoch
+# 					self.model.save_weights(self.out_dir + '/' + self.timestr + 'best_model_weights.h5', overwrite=True)
+# 				self.print_best()
 
 	def on_epoch_end(self, epoch, logs={}):
 		self.losses.append(logs.get('loss'))

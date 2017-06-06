@@ -10,9 +10,10 @@ from tqdm._tqdm import tqdm
 import logging, time
 import pickle as pkl
 from util.utils import setLogger, mkdir, print_args
-from util.data_processing import get_pdTable, tokenizeIt, createVocab, word2num, w2vEmbdReader
 
 logger = logging.getLogger(__name__)
+
+MAX_NB_WORDS = 150000
 
 def train(args):
 	timestr = time.strftime("%Y%m%d-%H%M%S-")
@@ -22,51 +23,106 @@ def train(args):
 	print_args(args)
 	
 	# process train and test data
+	from util.data_processing import get_pdTable
+	logger.info('Loading training file...')
 	_, train_question1, train_question2, train_y = get_pdTable(args.train_path)
-	if args.predict_test:
-		_, test_question1, test_question2 = get_pdTable(args.test_path, notag=True)
-	else:
-		_, test_question1, test_question2, test_y = get_pdTable(args.test_path)
-	
-	train_question1, train_maxLen1 = tokenizeIt(train_question1, clean=args.rawMaterial)
-	train_question2, train_maxLen2 = tokenizeIt(train_question2, clean=args.rawMaterial)
-	test_question1, test_maxLen1 = tokenizeIt(test_question1, clean=args.rawMaterial)
-	test_question2, test_maxLen2 = tokenizeIt(test_question2, clean=args.rawMaterial)
+	logger.info('Train csv: %d line loaded ' % len(train_question1))
+	logger.info('Loading test file...')
+	test_ids, test_question1, test_question2 = get_pdTable(args.test_path, notag=True)
+# 	if args.predict_test:
+# 		test_ids, test_question1, test_question2 = get_pdTable(args.test_path, notag=True)
+# 	else:
+# 		test_ids, test_question1, test_question2, test_y = get_pdTable(args.test_path)
+	logger.info('Test csv: %d line loaded ' % len(test_question1))
+
+	from util.data_processing import text_cleaner
+	logger.info('Text cleaning... ')
+	train_question1, train_maxLen1 = text_cleaner(train_question1)
+	train_question2, train_maxLen2 = text_cleaner(train_question2)
+	test_question1, test_maxLen1 = text_cleaner(test_question1)
+	test_question2, test_maxLen2 = text_cleaner(test_question2)
+# 	train_question1, train_maxLen1 = tokenizeIt(train_question1, clean=args.rawMaterial)
+# 	train_question2, train_maxLen2 = tokenizeIt(train_question2, clean=args.rawMaterial)
+# 	test_question1, test_maxLen1 = tokenizeIt(test_question1, clean=args.rawMaterial)
+# 	test_question2, test_maxLen2 = tokenizeIt(test_question2, clean=args.rawMaterial)
 	inputLength = max(train_maxLen1, train_maxLen2, test_maxLen1, test_maxLen2)
-	print('Max input length: %d ' % inputLength)
+	logger.info('Max input length: %d ' % inputLength)
 	inputLength = 32
-	print('Reset max length to 32')
-		
-	if args.load_vocab_from_file:
-		with open(args.load_vocab_from_file, 'rb') as vocab_file:
-			(vocabDict, vocabReverseDict) = pkl.load(vocab_file)
-			unk = None
-			if args.w2v:
-				if args.w2v.endswith('.pkl'):
-					with open(args.w2v, 'rb') as embd_file:
-						embdw2v = pkl.load(embd_file)
-				else:
-					embdw2v = w2vEmbdReader(args.w2v, vocabReverseDict, args.embd_dim)
-					with open(output_dir + '/'+ timestr + 'embd_dump.' + str(args.embd_dim) + 'd.pkl', 'wb') as embd_file:
-						pkl.dump(embdw2v, embd_file)
-			else:
-				embdw2v = None
-	else:
-		vocabDict, vocabReverseDict = createVocab([train_question1, train_question2, test_question1, test_question2], 
-												min_count=3, reservedList=['<pad>', '<unk>'])
-		embdw2v = None
-		unk = '<unk>'
-	# logger.info(vocabDict)
+	logger.info('Reset max length to 32')
+
+	from keras.preprocessing.text import Tokenizer
+	tokenizer = Tokenizer(num_words=MAX_NB_WORDS)
+	tokenizer.fit_on_texts(train_question1 + train_question2 + test_question1 + test_question2)
 	
-	# word to padded numerical np array
-	train_x1 = word2num(train_question1, vocabDict, unk, inputLength, padding='pre')
-	train_x2 = word2num(train_question2, vocabDict, unk, inputLength, padding='pre')
-	test_x1 = word2num(test_question1, vocabDict, unk, inputLength, padding='pre')
-	test_x2 = word2num(test_question2, vocabDict, unk, inputLength, padding='pre')
+	sequences_1 = tokenizer.texts_to_sequences(train_question1)
+	sequences_2 = tokenizer.texts_to_sequences(train_question2)
+	test_sequences_1 = tokenizer.texts_to_sequences(test_question1)
+	test_sequences_2 = tokenizer.texts_to_sequences(test_question2)
+	
+	word_index = tokenizer.word_index
+	logger.info('Found %s unique tokens' % len(word_index))
+	
+	from numpy import array
+	from keras.preprocessing.sequence import pad_sequences
+	train_x1 = pad_sequences(sequences_1, maxlen=inputLength)
+	train_x2 = pad_sequences(sequences_2, maxlen=inputLength)
+	train_y = array(train_y)
+	logger.info('Shape of data tensor: (%d, %d)' % train_x1.shape)
+	logger.info('Shape of label tensor: (%d, )' % train_y.shape)
+	
+	test_x1 = pad_sequences(test_sequences_1, maxlen=inputLength)
+	test_x2 = pad_sequences(test_sequences_2, maxlen=inputLength)
+	test_ids = array(test_ids)
+
+	if args.w2v:
+		if args.w2v.endswith('.pkl'):
+			with open(args.w2v, 'rb') as embd_file:
+				logger.info('Loading word embedding from pickle...')
+				embdw2v, vocabReverseDict = pkl.load(embd_file)
+				if not len(vocabReverseDict) == len(word_index):
+					logger.info('WARNING: reversed dict len incorrect %d , but word dict len %d ' % \
+							(len(vocabReverseDict), len(word_index)))
+		else: 
+			from util.data_processing import embdReader
+			logger.info('Loading word embedding from text file...')
+			embdw2v, vocabReverseDict = embdReader(args.w2v, args.embd_dim, word_index, MAX_NB_WORDS)
+			with open(output_dir + '/'+ timestr + 'embd_dump.' + str(args.embd_dim) + 'd.pkl', 'wb') as embd_file:
+				logger.info('Dumping word embedding to pickle...')
+				pkl.dump((embdw2v, vocabReverseDict), embd_file)
+
+# 	if args.load_vocab_from_file:
+# 		with open(args.load_vocab_from_file, 'rb') as vocab_file:
+# 			(vocabDict, vocabReverseDict) = pkl.load(vocab_file)
+# 			unk = None
+# 			if args.w2v:
+# 				if args.w2v.endswith('.pkl'):
+# 					with open(args.w2v, 'rb') as embd_file:
+# 						embdw2v = pkl.load(embd_file)
+# 				else:
+# 					from util.data_processing import w2vEmbdReader
+# 					embdw2v = w2vEmbdReader(args.w2v, vocabReverseDict, args.embd_dim)
+# 					with open(output_dir + '/'+ timestr + 'embd_dump.' + str(args.embd_dim) + 'd.pkl', 'wb') as embd_file:
+# 						pkl.dump(embdw2v, embd_file)
+# 			else:
+# 				embdw2v = None
+# 	else:
+# 		from util.data_processing import createVocab
+# 		vocabDict, vocabReverseDict = createVocab([train_question1, train_question2, test_question1, test_question2], 
+# 												min_count=3, reservedList=['<pad>', '<unk>'])
+# 		embdw2v = None
+# 		unk = '<unk>'
+## 	logger.info(vocabDict)
+	
+# 	# word to padded numerical np array
+# 	from util.data_processing import word2num
+# 	train_x1 = word2num(train_question1, vocabDict, unk, inputLength, padding='pre')
+# 	train_x2 = word2num(train_question2, vocabDict, unk, inputLength, padding='pre')
+# 	test_x1 = word2num(test_question1, vocabDict, unk, inputLength, padding='pre')
+# 	test_x2 = word2num(test_question2, vocabDict, unk, inputLength, padding='pre')
 	
 	if args.train_feature_path is not '':
 		from pandas import read_csv, DataFrame
-		from numpy import array, inf, nan
+		from numpy import inf, nan
 		df_train = read_csv(args.train_feature_path, encoding="ISO-8859-1")
 		if args.feature_list is not '':
 			feature_list = args.feature_list.split(',')
@@ -107,11 +163,11 @@ def train(args):
 	# choose model 
 	from src.rnn_model import getModel
 	
-	# Dump vocab
-	if not args.load_vocab_from_file:
-		with open(output_dir + '/'+ timestr + 'vocab.pkl', 'wb') as vocab_file:
-			pkl.dump((vocabDict, vocabReverseDict), vocab_file)
-			
+# 	# Dump vocab
+# 	if not args.load_vocab_from_file:
+# 		with open(output_dir + '/'+ timestr + 'vocab.pkl', 'wb') as vocab_file:
+# 			pkl.dump((vocabDict, vocabReverseDict), vocab_file)
+
 	if args.load_model_json:
 		from keras.models import model_from_json
 		from util.my_layers import DenseWithMasking, Conv1DWithMasking, MaxOverTime, MeanOverTime
@@ -124,9 +180,9 @@ def train(args):
 		logger.info('Loaded model from saved json')
 	else:
 		if args.train_feature_path is not '':
-			rnnmodel = getModel(args, inputLength, len(vocabDict), embd=embdw2v, feature_length=feature_length)
+			rnnmodel = getModel(args, inputLength, len(word_index)+1, embd=embdw2v, feature_length=feature_length)
 		else:
-			rnnmodel = getModel(args, inputLength, len(vocabDict), embd=embdw2v)
+			rnnmodel = getModel(args, inputLength, len(word_index)+1, embd=embdw2v)
 		
 	if args.load_model_weights:
 		rnnmodel.load_weights(args.load_model_weights)
@@ -138,7 +194,7 @@ def train(args):
 	else:
 		optimizer = args.optimizer
 
-	myMetrics = 'mse' #'binary_accuracy'
+	myMetrics = 'binary_accuracy' #'mse'
 	rnnmodel.compile(loss=args.loss, optimizer=optimizer, metrics=[myMetrics])
 	rnnmodel.summary()
 
@@ -163,11 +219,20 @@ def train(args):
 			
 	# train and test model
 	myCallbacks = []
-	if not args.predict_test:
-		if args.eval_on_epoch:
-			from util.model_eval import Evaluator
-			evl = Evaluator(args, output_dir, timestr, myMetrics, test_x, test_y, vocabReverseDict)
-			myCallbacks.append(evl)
+# 	if not args.predict_test:
+# 		if args.eval_on_epoch:
+# 			from util.model_eval import Evaluator
+# 			evl = Evaluator(args, output_dir, timestr, myMetrics, test_x, test_y, vocabReverseDict)
+# 			myCallbacks.append(evl)
+	if args.save_model:
+		from keras.callbacks import ModelCheckpoint
+		bst_model_path = output_dir + '/' + timestr + 'best_model_weights.h5'
+		model_checkpoint = ModelCheckpoint(bst_model_path, save_best_only=True, save_weights_only=True, verbose=1)
+		myCallbacks.append(model_checkpoint)
+	if args.plot:
+		from util.model_eval import PlotPic
+		plot_pic = PlotPic(args, output_dir, timestr, myMetrics)
+		myCallbacks.append(plot_pic)
 	if args.earlystop:
 		from keras.callbacks import EarlyStopping
 		earlystop = EarlyStopping(patience = args.earlystop, verbose=1, mode='auto')
@@ -177,6 +242,8 @@ def train(args):
 				 epochs=args.epochs, callbacks=myCallbacks)
 	
 	if args.predict_test:
+		logger.info("Tuning model to best record...")
+		rnnmodel.load_weights(bst_model_path)
 		logger.info("Predicting test file result...")
 		preds = rnnmodel.predict(test_x, batch_size=args.eval_batch_size, verbose=1)
 		from numpy import squeeze
@@ -190,8 +257,8 @@ def train(args):
 			for itm in tqdm(preds):
 				writer_sub.writerow([idx, itm])
 				idx += 1
-	elif not args.eval_on_epoch:
-		rnnmodel.evaluate(test_x, test_y, batch_size=args.eval_batch_size)
+# 	elif not args.eval_on_epoch:
+# 		rnnmodel.evaluate(test_x, test_y, batch_size=args.eval_batch_size)
 	
 	# test output (remove duplicate, remove <pad> <unk>, comparable layout, into csv)
 	# final inference: output(remove duplicate, remove <pad> <unk>, limit output words to 3 or 2 or 1..., into csv)
@@ -199,6 +266,7 @@ def train(args):
 	
 def inference(args):
 	
+	raise NotImplementedError
 	timestr = time.strftime("%Y%m%d-%H%M%S-")
 	output_dir = args.out_dir_path + '/' + time.strftime("%m%d")
 	mkdir(output_dir)
@@ -206,9 +274,11 @@ def inference(args):
 	print_args(args)
 	
 	# process train and test data
+	from util.data_processing import get_pdTable
 	_, train_question1, train_question2, train_y = get_pdTable(args.train_path)
 	_, test_question1, test_question2, test_y = get_pdTable(args.test_path)
 	
+	from util.data_processing import tokenizeIt
 	train_question1, train_maxLen1 = tokenizeIt(train_question1, clean=args.rawMaterial, addHead='<s>')
 	train_question2, train_maxLen2 = tokenizeIt(train_question2, clean=args.rawMaterial, addHead='<s>')
 	test_question1, test_maxLen1 = tokenizeIt(test_question1, clean=args.rawMaterial, addHead='<s>')

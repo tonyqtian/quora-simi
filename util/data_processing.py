@@ -38,16 +38,16 @@ def get_words(text):
 # 	return [word.strip().lower() for word in word_split.split(text)]
 	text = str(text)
 # 	text = text.replace('’s', ' ’s')
-	text = text.replace('…', ' ')
-	text = text.replace('”', ' ')
-	text = text.replace('“', ' ')
-	text = text.replace('‘', ' ')
-	text = text.replace('’', ' ')
-	text = text.replace('"', ' ')
+# 	text = text.replace('…', ' ')
+# 	text = text.replace('”', ' ')
+# 	text = text.replace('“', ' ')
+# 	text = text.replace('‘', ' ')
+# 	text = text.replace('’', ' ')
+# 	text = text.replace('"', ' ')
 # 	text = text.replace("'", " ")
-	text = text.replace('-', ' ')
+# 	text = text.replace('-', ' ')
 # 	text = text.replace('/', ' ')
-	text = text.replace("\\", " ")
+# 	text = text.replace("\\", " ")
 	# Clean the text
 	text = re.sub(r"[^A-Za-z0-9^,!.\/'+-=]", " ", text)
 	text = re.sub(r"what's", "what is ", text)
@@ -78,8 +78,11 @@ def get_words(text):
 	text = re.sub(r"e - mail", "email", text)
 	text = re.sub(r"j k", "jk", text)
 	text = re.sub(r"\s{2,}", " ", text)
-	
-	return word_tokenize(text)
+
+	text = text.replace("\\", " ")
+	text = text.replace('"', ' ')
+	return text
+# 	return word_tokenize(text)
 	
 def get_pdTable(path, notag=False):
 	logger.info(' Processing pandas csv ')
@@ -89,13 +92,23 @@ def get_pdTable(path, notag=False):
 	else:
 		return pdtable.id, pdtable.question1, pdtable.question2, pdtable.is_duplicate
 
+def text_cleaner(table):
+	textTable = []
+	maxLen = 0
+	for text in tqdm(table, file=sys.stdout):
+		text = get_words(text)
+		textTable.append(text)
+		if len(text) > maxLen:
+			maxLen = len(text)
+	return textTable, maxLen
+
 def tokenizeIt(table, clean=False, addHead=None):
 	tokenizedTable = []
 	maxLen = 0
 	for text in tqdm(table, file=sys.stdout):
 		if clean:
 # 			text = stripTagsAndUris(text)
-			text = get_words(text)
+			text = word_tokenize(get_words(text))
 			if not addHead is None:
 				text = [addHead] + text
 			tokenizedTable.append(text)
@@ -209,6 +222,35 @@ def prob_top_n(y, top=5):
 		y_ary.append(idx_pos)
 	return y_ary
 
+def embdReader(embd_path, embd_dim, word_index, max_nb_words):
+	logger.info('Indexing word vectors')
+	embeddings_index = {}
+	with open(embd_path, 'r', encoding='utf8') as f:
+		for line in tqdm(f):
+			values = line.split()
+			word = values[0]
+			coefs = np.asarray(values[1:], dtype='float32')
+			embeddings_index[word] = coefs	
+	logger.info('Found %d word vectors in glove file.' % len(embeddings_index))
+
+	########################################
+	## prepare embeddings
+	########################################
+	logger.info('Preparing embedding matrix based on given word list...')	
+	nb_words = min(max_nb_words, len(word_index))+1
+	
+	embedding_matrix = np.zeros((nb_words, embd_dim))
+	reverseDict = ['']*nb_words
+	for word, i in tqdm(word_index.items()):
+		embedding_vector = embeddings_index.get(word)
+		if embedding_vector is not None:
+			embedding_matrix[i] = embedding_vector
+			reverseDict[i] = word
+		else:
+			reverseDict[i] = '<' + word + '>'
+	logger.info('Null word embeddings: %d' % np.sum(np.sum(embedding_matrix, axis=1) == 0))
+	return embedding_matrix, reverseDict
+	
 def w2vEmbdReader(embd_path, reVocab, embd_dim):
 	logger.info('  getting pre-trained embedding from file... ')
 	logger.info('  embedding length: %i  dim: %i  ' % (len(reVocab), embd_dim))
@@ -218,7 +260,7 @@ def w2vEmbdReader(embd_path, reVocab, embd_dim):
 		for line in tqdm(fhd, total=len(reVocab)):
 			elem = line.strip().split(' ')
 			assert len(elem) == embd_dim + 1, 'Incorrect Embedding Dimension, expect %d but got %d ' % (embd_dim, len(elem)-1)
-			w2vec = np.array(elem[1:])
+			w2vec = np.asarray(elem[1:], dtype='float32')
 			embd_matrix[idx] = w2vec
 			idx += 1
 	return embd_matrix
