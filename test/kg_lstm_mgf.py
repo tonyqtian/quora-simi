@@ -209,8 +209,9 @@ if load_train_test_pkl is '':
 		print('Dumping processed input to pickle...')
 		pkl.dump((data_1, data_2, labels, test_data_1, test_data_2, test_ids, word_index), input_file)
 else:
-	print('Loading input file from pickle...')
-	data_1, data_2, labels, test_data_1, test_data_2, test_ids, word_index = pkl.load(load_train_test_pkl)
+	with open(load_train_test_pkl, 'rb') as input_file:
+		print('Loading input file from pickle...')
+		data_1, data_2, labels, test_data_1, test_data_2, test_ids, word_index = pkl.load(input_file)
 	
 	
 if load_embd_pkl is '':
@@ -247,8 +248,9 @@ if load_embd_pkl is '':
 		print('Dumping word embedding to pickle...')
 		pkl.dump(embedding_matrix, embd_file)
 else:
-	print('Loading word embedding from pickle...')
-	embedding_matrix = pkl.load(load_embd_pkl)
+	with open(load_embd_pkl, 'rb') as embd_file:
+		print('Loading word embedding from pickle...')
+		embedding_matrix = pkl.load(embd_file)
 	
 ########################################
 ## generate leaky features
