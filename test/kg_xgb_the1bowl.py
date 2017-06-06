@@ -3,12 +3,12 @@ import numpy as np
 import nltk
 # from collections import Counter
 from nltk.corpus import stopwords
-# from sklearn.metrics import log_loss
+from sklearn.metrics import log_loss
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 # from scipy.optimize import minimize
 stops = set(stopwords.words("english"))
-# import xgboost as xgb
-# from sklearn.cross_validation import train_test_split
+import xgboost as xgb
+from sklearn.cross_validation import train_test_split
 # import multiprocessing
 import difflib
 
@@ -77,42 +77,42 @@ test.to_csv('../output/test_features_1bowl.csv', index=False)
 # raise RuntimeError
 print('Finished.')
 
-# col = [c for c in train.columns if c[:1]=='z']
-# 
-# pos_train = train[train['is_duplicate'] == 1]
-# neg_train = train[train['is_duplicate'] == 0]
-# p = 0.165
-# scale = ((len(pos_train) / (len(pos_train) + len(neg_train))) / p) - 1
-# while scale > 1:
-#     neg_train = pd.concat([neg_train, neg_train])
-#     scale -=1
-# neg_train = pd.concat([neg_train, neg_train[:int(scale * len(neg_train))]])
-# train = pd.concat([pos_train, neg_train])
-# 
-# x_train, x_valid, y_train, y_valid = train_test_split(train[col], train['is_duplicate'], test_size=0.2, random_state=0)
-# 
-# params = {}
-# params["objective"] = "binary:logistic"
-# params['eval_metric'] = 'logloss'
-# params["eta"] = 0.02
-# params["subsample"] = 0.7
-# params["min_child_weight"] = 1
-# params["colsample_bytree"] = 0.7
-# params["max_depth"] = 4
-# params["silent"] = 1
-# params["seed"] = 1632
-# 
-# d_train = xgb.DMatrix(x_train, label=y_train)
-# d_valid = xgb.DMatrix(x_valid, label=y_valid)
-# watchlist = [(d_train, 'train'), (d_valid, 'valid')]
-# bst = xgb.train(params, d_train, 500, watchlist, early_stopping_rounds=50, verbose_eval=100) #change to higher #s
-# print(log_loss(train.is_duplicate, bst.predict(xgb.DMatrix(train[col]))))
-# 
-# test = get_features(test)
-# #test.to_csv('test.csv', index=False)
-# 
-# sub = pd.DataFrame()
-# sub['test_id'] = test['test_id']
-# sub['is_duplicate'] = bst.predict(xgb.DMatrix(test[col]))
-# 
-# sub.to_csv('z08_submission_xgb_01.csv', index=False)
+col = [c for c in train.columns if c[:1]=='z']
+
+pos_train = train[train['is_duplicate'] == 1]
+neg_train = train[train['is_duplicate'] == 0]
+p = 0.165
+scale = ((len(pos_train) / (len(pos_train) + len(neg_train))) / p) - 1
+while scale > 1:
+    neg_train = pd.concat([neg_train, neg_train])
+    scale -=1
+neg_train = pd.concat([neg_train, neg_train[:int(scale * len(neg_train))]])
+train = pd.concat([pos_train, neg_train])
+
+x_train, x_valid, y_train, y_valid = train_test_split(train[col], train['is_duplicate'], test_size=0.2, random_state=0)
+
+params = {}
+params["objective"] = "binary:logistic"
+params['eval_metric'] = 'logloss'
+params["eta"] = 0.02
+params["subsample"] = 0.7
+params["min_child_weight"] = 1
+params["colsample_bytree"] = 0.7
+params["max_depth"] = 4
+params["silent"] = 1
+params["seed"] = 1632
+
+d_train = xgb.DMatrix(x_train, label=y_train)
+d_valid = xgb.DMatrix(x_valid, label=y_valid)
+watchlist = [(d_train, 'train'), (d_valid, 'valid')]
+bst = xgb.train(params, d_train, 500, watchlist, early_stopping_rounds=50, verbose_eval=100) #change to higher #s
+print(log_loss(train.is_duplicate, bst.predict(xgb.DMatrix(train[col]))))
+
+test = get_features(test)
+#test.to_csv('test.csv', index=False)
+
+sub = pd.DataFrame()
+sub['test_id'] = test['test_id']
+sub['is_duplicate'] = bst.predict(xgb.DMatrix(test[col]))
+
+sub.to_csv('z08_submission_xgb_01.csv', index=False)

@@ -33,18 +33,21 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 
 from sklearn.preprocessing import StandardScaler
 from tqdm._tqdm import tqdm
+
 # from util.utils import mkdir
 
 ########################################
 ## set directories and parameters
 ########################################
 BASE_DIR = '../data/'
-# EMBEDDING_FILE = BASE_DIR + 'glove.840B.quoraVocab.300d_sample.txt'
-# TRAIN_DATA_FILE = BASE_DIR + 'train_sample.csv'
-# TEST_DATA_FILE = BASE_DIR + 'test_sample.csv'
-# EPOCHES = 2
-# train_feature_path = BASE_DIR + 'train_extra_features_sample.csv'
-# test_feature_path = BASE_DIR + 'test_extra_features_sample.csv'
+EMBEDDING_FILE = BASE_DIR + 'glove.840B.quoraVocab.300d_sample.txt'
+TRAIN_DATA_FILE = BASE_DIR + 'train_sample.csv'
+TEST_DATA_FILE = BASE_DIR + 'test_sample.csv'
+EPOCHES = 2
+train_feature_path = BASE_DIR + 'train_extra_features_sample.csv'
+test_feature_path = BASE_DIR + 'test_extra_features_sample.csv'
+train_bowl_feature_path = BASE_DIR + 'train_features_1bowl_sample.csv'
+test_bowl_feature_path = BASE_DIR + 'test_features_1bowl_sample.csv'
 
 feature_list = "minkowski_distance,skew_q1vec,skew_q2vec, euclidean_distance,braycurtis_distance," + \
                 " norm_wmd, tfidf_wm,tfidf_wm_stops,cosine_distance, wmd,cityblock_distance, " + \
@@ -56,13 +59,17 @@ feature_list = "minkowski_distance,skew_q1vec,skew_q2vec, euclidean_distance,bra
 				   "q1_q2_intersect,q1_freq,q2_freq"
 fidx_start = -6
 fidx_end = 0
-
-EMBEDDING_FILE = BASE_DIR + 'glove.840B.quoraVocab.300d.txt'
-TRAIN_DATA_FILE = BASE_DIR + 'train.csv'
-TEST_DATA_FILE = BASE_DIR + 'test.csv'
-train_feature_path = BASE_DIR + 'train_extra_features.csv'
-test_feature_path = BASE_DIR + 'test_extra_features.csv'
-EPOCHES = 50
+bowl_feat_list = "z_match_ratio,z_tfidf_mean1,z_tfidf_mean2," + \
+				"z_noun_match,z_tfidf_len1,z_tfidf_len2," + \
+				"z_tfidf_sum1,z_tfidf_sum2"
+# EMBEDDING_FILE = BASE_DIR + 'glove.840B.quoraVocab.300d.txt'
+# TRAIN_DATA_FILE = BASE_DIR + 'train.csv'
+# TEST_DATA_FILE = BASE_DIR + 'test.csv'
+# train_feature_path = BASE_DIR + 'train_extra_features.csv'
+# test_feature_path = BASE_DIR + 'test_extra_features.csv'
+# train_bowl_feature_path = BASE_DIR + 'train_features_1bowl.csv'
+# test_bowl_feature_path = BASE_DIR + 'test_features_1bowl.csv'
+# EPOCHES = 50
 MAX_SEQUENCE_LENGTH = 30
 MAX_NB_WORDS = 200000
 EMBEDDING_DIM = 300
@@ -221,12 +228,25 @@ if train_feature_path is not '':
 		train_features = df_train.iloc[:, fidx_start:]
 	else:
 		train_features = df_train.iloc[:, fidx_start:fidx_end]
-	feature_length = len(train_features.columns)
+		
+	if train_bowl_feature_path is not '':
+		df_train = read_csv(train_bowl_feature_path, encoding="ISO-8859-1")
+		if bowl_feat_list is not '':
+			bowl_feat_list = bowl_feat_list.split(',')
+			for feature_name in bowl_feat_list:
+				train_features[feature_name.strip()] = df_train[feature_name.strip()]	
+		else:
+			for feature_name in df_train.columns:
+				if feature_name.startswith('z_'):
+					train_features[feature_name] = df_train[feature_name]
+	print('Final train feature list ', train_features.columns)
+# 	feature_length = len(train_features.columns)
 	train_features = train_features.replace([inf, -inf, nan], 0)
 	train_features = array(train_features)
 	print('Loaded train feature shape: (%d, %d) ' % train_features.shape)
-	del df_train
+	del df_train		
 	leaks = train_features
+	
 	df_test = read_csv(test_feature_path, encoding="ISO-8859-1")
 	if feature_list is not '':
 # 		feature_list = feature_list.split(',')
@@ -237,6 +257,20 @@ if train_feature_path is not '':
 		test_features = df_test.iloc[:, fidx_start:]
 	else:
 		test_features = df_test.iloc[:, fidx_start:fidx_end]
+
+	if test_bowl_feature_path is not '':
+		df_test = read_csv(test_bowl_feature_path, encoding="ISO-8859-1")
+		if bowl_feat_list is not '':
+# 			bowl_feat_list = bowl_feat_list.split(',')
+			for feature_name in bowl_feat_list:
+				test_features[feature_name.strip()] = df_test[feature_name.strip()]
+		else:
+			for feature_name in df_test.columns:
+				if feature_name.startswith('z_'):
+					print(feature_name)
+					print(df_test[feature_name])
+					test_features[feature_name] = df_test[feature_name]
+	print('Final test feature list ', test_features.columns)
 	test_features = test_features.replace([inf, -inf, nan], 0)
 	test_features = array(test_features)
 	print('Loaded test feature shape: (%d, %d) ' % test_features.shape)

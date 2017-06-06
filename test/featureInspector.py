@@ -7,13 +7,18 @@ from pandas import read_csv
 import numpy as np
 
 # df_train = read_csv('D:\\BaiduCloud\\PostGraduate\\DL\\Quora\\train_extra_features.csv', encoding="ISO-8859-1")
-df_train = read_csv('../data/train_extra_features_sample.csv', encoding="ISO-8859-1")
+# df_train = read_csv('../data/train_extra_features_sample.csv', encoding="ISO-8859-1")
+# df_train = read_csv('D:\\BaiduCloud\\PostGraduate\\DL\\Quora\\train_features_1bowl.csv', encoding="ISO-8859-1")
+df_train = read_csv('../data/train_features_1bowl_sample.csv', encoding="ISO-8859-1")
 df_train = df_train.drop('id', axis=1)
+# df_train = df_train.drop('test_id', axis=1)
 df_train = df_train.drop('qid1', axis=1)
 df_train = df_train.drop('qid2', axis=1)
 df_train = df_train.drop('question1', axis=1)
 df_train = df_train.drop('question2', axis=1)
 df_train = df_train.drop('is_duplicate', axis=1)
+df_train = df_train.drop('question1_nouns', axis=1)
+df_train = df_train.drop('question2_nouns', axis=1)
 
 df_train = df_train.replace([np.inf, -np.inf, np.nan], 0)
 
@@ -61,4 +66,4 @@ for itm in unboundFeat:
 # print(df_train['kur_q1vec'])
 # print(df_train['word_match'])
 # print(df_train['tfidf_wm'])
-print(df_train['wc_ratio'])
+print(df_train['z_tfidf_mean2'])
