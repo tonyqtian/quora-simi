@@ -213,13 +213,13 @@ else:
 		print('Loading input file from pickle ', load_train_test_pkl)
 		data_1, data_2, labels, test_data_1, test_data_2, test_ids, word_index = pkl.load(input_file)
 	
+nb_words = min(MAX_NB_WORDS, len(word_index))+1
 	
 if load_embd_pkl is '':
 	########################################
 	## index word vectors
 	########################################
 	print('Indexing word vectors')
-	
 	embeddings_index = {}
 	with open(EMBEDDING_FILE, 'r', encoding='utf8') as f:
 		count = 0
@@ -235,7 +235,7 @@ if load_embd_pkl is '':
 	## prepare embeddings
 	########################################
 	print('Preparing embedding matrix')
-	nb_words = min(MAX_NB_WORDS, len(word_index))+1
+	
 	
 	embedding_matrix = np.zeros((nb_words, EMBEDDING_DIM))
 	for word, i in tqdm(word_index.items()):
