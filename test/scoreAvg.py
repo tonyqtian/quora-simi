@@ -9,7 +9,7 @@ from pandas.core.frame import DataFrame
 base = '../output/candi/'
 file_list = '20170604-165432-XGB_leaky.clean.csv,' + \
 			'20170605-112337-XGB_leaky.csv,' + \
-			'20170605-231748-0.1622_lstm_225_120_0.40_0.26.csv' + \
+			'20170605-231748-0.1622_lstm_225_120_0.40_0.26.csv,' + \
 			' 20170606-181044-XGB_leaky.csv'
 
 test_ids = []
