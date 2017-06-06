@@ -40,14 +40,14 @@ from tqdm._tqdm import tqdm
 ## set directories and parameters
 ########################################
 BASE_DIR = '../data/'
-EMBEDDING_FILE = BASE_DIR + 'glove.840B.quoraVocab.300d_sample.txt'
-TRAIN_DATA_FILE = BASE_DIR + 'train_sample.csv'
-TEST_DATA_FILE = BASE_DIR + 'test_sample.csv'
-EPOCHES = 2
-train_feature_path = BASE_DIR + 'train_extra_features_sample.csv'
-test_feature_path = BASE_DIR + 'test_extra_features_sample.csv'
-train_bowl_feature_path = BASE_DIR + 'train_features_1bowl_sample.csv'
-test_bowl_feature_path = BASE_DIR + 'test_features_1bowl_sample.csv'
+# EMBEDDING_FILE = BASE_DIR + 'glove.840B.quoraVocab.300d_sample.txt'
+# TRAIN_DATA_FILE = BASE_DIR + 'train_sample.csv'
+# TEST_DATA_FILE = BASE_DIR + 'test_sample.csv'
+# EPOCHES = 2
+# train_feature_path = BASE_DIR + 'train_extra_features_sample.csv'
+# test_feature_path = BASE_DIR + 'test_extra_features_sample.csv'
+# train_bowl_feature_path = BASE_DIR + 'train_features_1bowl_sample.csv'
+# test_bowl_feature_path = BASE_DIR + 'test_features_1bowl_sample.csv'
 
 feature_list = "minkowski_distance,skew_q1vec,skew_q2vec, euclidean_distance,braycurtis_distance," + \
                 " norm_wmd, tfidf_wm,tfidf_wm_stops,cosine_distance, wmd,cityblock_distance, " + \
@@ -62,14 +62,14 @@ fidx_end = 0
 bowl_feat_list = "z_match_ratio,z_tfidf_mean1,z_tfidf_mean2," + \
 				"z_noun_match,z_tfidf_len1,z_tfidf_len2," + \
 				"z_tfidf_sum1,z_tfidf_sum2"
-# EMBEDDING_FILE = BASE_DIR + 'glove.840B.quoraVocab.300d.txt'
-# TRAIN_DATA_FILE = BASE_DIR + 'train.csv'
-# TEST_DATA_FILE = BASE_DIR + 'test.csv'
-# train_feature_path = BASE_DIR + 'train_extra_features.csv'
-# test_feature_path = BASE_DIR + 'test_extra_features.csv'
-# train_bowl_feature_path = BASE_DIR + 'train_features_1bowl.csv'
-# test_bowl_feature_path = BASE_DIR + 'test_features_1bowl.csv'
-# EPOCHES = 50
+EMBEDDING_FILE = BASE_DIR + 'glove.840B.quoraVocab.300d.txt'
+TRAIN_DATA_FILE = BASE_DIR + 'train.csv'
+TEST_DATA_FILE = BASE_DIR + 'test.csv'
+train_feature_path = BASE_DIR + 'train_extra_features.csv'
+test_feature_path = BASE_DIR + 'test_extra_features.csv'
+train_bowl_feature_path = BASE_DIR + 'train_features_1bowl.csv'
+test_bowl_feature_path = BASE_DIR + 'test_features_1bowl.csv'
+EPOCHES = 50
 MAX_SEQUENCE_LENGTH = 30
 MAX_NB_WORDS = 200000
 EMBEDDING_DIM = 300
