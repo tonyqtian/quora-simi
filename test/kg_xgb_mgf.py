@@ -200,8 +200,7 @@ def build_features(data, stops, weights):
 
 def main():
 	parser = argparse.ArgumentParser(description='XGB with Handcrafted Features')
-	parser.add_argument('--save', type=str, default='XGB_leaky',
-						help='save_file_names')
+	parser.add_argument('--save', type=str, default='XGB_leaky', help='save_file_names')
 	args = parser.parse_args()
 	timestr = time.strftime("%Y%m%d-%H%M%S-")
 	output_dir = '../output/' + time.strftime("%m%d")
