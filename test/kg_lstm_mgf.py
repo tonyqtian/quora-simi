@@ -13,7 +13,7 @@ Single model may achieve LB scores at around 0.18+, average ensembles can get 0.
 import re
 import csv
 import codecs
-import time
+from time import strftime, sleep
 import numpy as np
 import pandas as pd
 import pickle as pkl
@@ -93,8 +93,8 @@ rate_drop_dense = 0.25 + np.random.rand() * 0.15
 act = 'relu'
 re_weight = True # whether to re-weight classes to fit the 17.5% share in test set
 
-timestr = time.strftime("%Y%m%d-%H%M%S-")
-output_dir = '../output/' + time.strftime("%m%d")
+timestr = strftime("%Y%m%d-%H%M%S-")
+output_dir = '../output/' + strftime("%m%d")
 # mkdir(output_dir)
 STAMP = 'lstm_%d_%d_%.2f_%.2f'%(num_lstm, num_dense, rate_drop_lstm, rate_drop_dense)
 
@@ -473,3 +473,21 @@ preds /= 2
 
 submission = pd.DataFrame({'test_id':test_ids, 'is_duplicate':preds.ravel()})
 submission.to_csv(output_dir + '/' + timestr + '%.4f_'%(bst_val_score)+STAMP+'.csv', index=False)
+
+print('\a')
+sleep(0.3)
+print('\a')
+sleep(0.3)
+print('\a')
+sleep(1)
+print('\a')
+sleep(0.3)
+print('\a')
+sleep(0.3)
+print('\a')
+sleep(1)
+print('\a')
+sleep(0.3)
+print('\a')
+sleep(0.3)
+print('\a')
