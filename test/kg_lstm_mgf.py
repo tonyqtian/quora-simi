@@ -210,7 +210,7 @@ if load_train_test_pkl is '':
 		pkl.dump((data_1, data_2, labels, test_data_1, test_data_2, test_ids, word_index), input_file)
 else:
 	with open(load_train_test_pkl, 'rb') as input_file:
-		print('Loading input file from pickle...')
+		print('Loading input file from pickle ', load_train_test_pkl)
 		data_1, data_2, labels, test_data_1, test_data_2, test_ids, word_index = pkl.load(input_file)
 	
 	
@@ -249,7 +249,7 @@ if load_embd_pkl is '':
 		pkl.dump(embedding_matrix, embd_file)
 else:
 	with open(load_embd_pkl, 'rb') as embd_file:
-		print('Loading word embedding from pickle...')
+		print('Loading word embedding from pickle ', load_embd_pkl)
 		embedding_matrix = pkl.load(embd_file)
 	
 ########################################
