@@ -73,10 +73,10 @@ train_bowl_feature_path = BASE_DIR + 'train_features_1bowl.csv'
 test_bowl_feature_path = BASE_DIR + 'test_features_1bowl.csv'
 # train_bowl_feature_path = ''
 # test_bowl_feature_path = ''
-load_train_test_pkl = ''
-load_embd_pkl = ''
-# load_train_test_pkl = BASE_DIR + 'input_train_test.pkl'
-# load_embd_pkl = BASE_DIR + 'embd_dump.pkl'
+# load_train_test_pkl = ''
+# load_embd_pkl = ''
+load_train_test_pkl = BASE_DIR + '20170606-203300-input_train_test.pkl'
+load_embd_pkl = BASE_DIR + '20170606-203300-embd_dump.pkl'
 
 EPOCHES = 50
 MAX_SEQUENCE_LENGTH = 30
