@@ -401,9 +401,9 @@ merged = concatenate(for_concat)
 merged = BatchNormalization()(merged)
 merged = Dropout(rate_drop_dense)(merged)
 
-merged = Dense(num_dense*2, activation=act)(merged)
-merged = BatchNormalization()(merged)
-merged = Dropout(rate_drop_dense)(merged)
+# merged = Dense(num_dense*2, activation=act)(merged)
+# merged = BatchNormalization()(merged)
+# merged = Dropout(rate_drop_dense)(merged)
 
 merged = Dense(num_dense, activation=act)(merged)
 merged = BatchNormalization()(merged)
