@@ -9,17 +9,24 @@ matplotlib.use('Agg')
 from tqdm._tqdm import tqdm
 import logging, time
 import pickle as pkl
-from numpy import array, squeeze, vstack, inf, nan
+import csv
+from numpy import array, squeeze, vstack, inf, nan, concatenate
 from pandas import read_csv, DataFrame
 
 from util.utils import setLogger, mkdir, print_args
-from util.data_processing import get_pdTable, text_cleaner, embdReader
-
+from util.data_processing import get_pdTable, text_cleaner, embdReader, tokenizeIt
+from util.my_layers import DenseWithMasking, Conv1DWithMasking, MaxOverTime, MeanOverTime
+from util.model_eval import PlotPic
+from src.lm_1b_model import lm_1b_infer
+	
+from keras.models import model_from_json
 from keras.preprocessing.text import Tokenizer
 from keras.utils import plot_model
 from keras.optimizers import RMSprop
 from keras.preprocessing.sequence import pad_sequences
 from sklearn.preprocessing.data import StandardScaler
+from keras.callbacks import ModelCheckpoint, EarlyStopping
+
 # choose model 
 from src.rnn_model import getModel
 
@@ -183,8 +190,6 @@ def train(args):
 # 			pkl.dump((vocabDict, vocabReverseDict), vocab_file)
 
 	if args.load_model_json:
-		from keras.models import model_from_json
-		from util.my_layers import DenseWithMasking, Conv1DWithMasking, MaxOverTime, MeanOverTime
 		with open(args.load_model_json, 'r') as json_file:
 			rnnmodel = model_from_json(json_file.read(), 
 									custom_objects={"DenseWithMasking": DenseWithMasking,
@@ -223,9 +228,13 @@ def train(args):
 			arch.write(rnnmodel.to_json(indent=2))
 		logger.info('  Done')
 
-	train_x = [train_x1, train_x2]
+	train_x1_aug = vstack((train_x1, train_x2))
+	train_x2_aug = vstack((train_x2, train_x1))
+	train_y = concatenate((train_y, train_y))
+	train_x = [train_x1_aug, train_x2_aug]
 	test_x = [test_x1, test_x2]
 	if args.train_feature_path is not '':
+		train_features = vstack((train_features, train_features))
 		train_x += [train_features]
 		test_x +=[test_features]
 			
@@ -237,16 +246,13 @@ def train(args):
 # 			evl = Evaluator(args, output_dir, timestr, myMetrics, test_x, test_y, vocabReverseDict)
 # 			myCallbacks.append(evl)
 	if args.save_model:
-		from keras.callbacks import ModelCheckpoint
 		bst_model_path = output_dir + '/' + timestr + 'best_model_weights.h5'
 		model_checkpoint = ModelCheckpoint(bst_model_path, save_best_only=True, save_weights_only=True, verbose=1)
 		myCallbacks.append(model_checkpoint)
 	if args.plot:
-		from util.model_eval import PlotPic
 		plot_pic = PlotPic(args, output_dir, timestr, myMetrics)
 		myCallbacks.append(plot_pic)
 	if args.earlystop:
-		from keras.callbacks import EarlyStopping
 		earlystop = EarlyStopping(patience = args.earlystop, verbose=1, mode='auto')
 		myCallbacks.append(earlystop)
 			
@@ -260,7 +266,6 @@ def train(args):
 		preds = rnnmodel.predict(test_x, batch_size=args.eval_batch_size, verbose=1)
 		preds = squeeze(preds)
 		logger.info('Write predictions into file... Total line: ', len(preds))
-		import csv
 		with open(output_dir + '/'+ timestr + 'predict.csv', 'w', encoding='utf8') as fwrt:
 			writer_sub = csv.writer(fwrt)
 			writer_sub.writerow(['test_id', 'is_duplicate'])
@@ -288,7 +293,6 @@ def inference(args):
 	_, train_question1, train_question2, train_y = get_pdTable(args.train_path)
 	_, test_question1, test_question2, test_y = get_pdTable(args.test_path)
 	
-	from util.data_processing import tokenizeIt
 	train_question1, train_maxLen1 = tokenizeIt(train_question1, clean=args.rawMaterial, addHead='<s>')
 	train_question2, train_maxLen2 = tokenizeIt(train_question2, clean=args.rawMaterial, addHead='<s>')
 	test_question1, test_maxLen1 = tokenizeIt(test_question1, clean=args.rawMaterial, addHead='<s>')
@@ -298,7 +302,6 @@ def inference(args):
 	inputLength = 50
 	print('Reset max length to %d' % inputLength)
 
-	from src.lm_1b_model import lm_1b_infer
 	train_question1_vec = lm_1b_infer(args, inputLength, train_question1)
 	print('Train Q1 shape: ', train_question1_vec.shape)
 	train_question2_vec = lm_1b_infer(args, inputLength, train_question2)

@@ -12,10 +12,13 @@ from keras.layers.wrappers import Bidirectional, TimeDistributed
 from keras.layers.merge import Concatenate
 from keras.engine.topology import Input
 from keras.models import Model
-
 from keras.layers.normalization import BatchNormalization
 # from keras.layers import Dense
 from util.my_layers import DenseWithMasking
+from util.my_layers import MeanOverTime
+from util.my_layers import Conv1DWithMasking, MaxOverTime
+
+from tensorflow import device
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +32,6 @@ def getModel(args, input_length, vocab_size, embd, feature_length=0):
 # 		final_init = 'he_normal'
 # 	else:
 # 		final_init = 'he_uniform'
-	from tensorflow import device
 	with device('/cpu:0'):
 		if type(embd) is type(None):
 			embd_layer = Embedding(vocab_size, args.embd_dim, mask_zero=True, trainable=True)
@@ -44,12 +46,10 @@ def getModel(args, input_length, vocab_size, embd, feature_length=0):
 						dropout=dropout_prob, recurrent_dropout=dropout_prob)
 
 	if args.mot_layer:
-		from util.my_layers import MeanOverTime
 		w2v_dense_layer = TimeDistributed(DenseWithMasking(args.embd_dim*2//3))
 		meanpool = MeanOverTime()
 
 	if args.cnn_dim:
-		from util.my_layers import Conv1DWithMasking, MaxOverTime
 		conv1dw2 = Conv1DWithMasking(filters=args.cnn_dim, kernel_size=2, padding='valid', strides=1)
 		conv1dw3 = Conv1DWithMasking(filters=args.cnn_dim, kernel_size=3, padding='valid', strides=1)
 		maxpool = MaxOverTime()
