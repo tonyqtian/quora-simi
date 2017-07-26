@@ -212,7 +212,7 @@ def train(args):
 	else:
 		optimizer = args.optimizer
 
-	myMetrics = 'binary_accuracy' #'mse'
+	myMetrics = 'acc' # 'binary_accuracy' # 'mse'
 	rnnmodel.compile(loss=args.loss, optimizer=optimizer, metrics=[myMetrics])
 	rnnmodel.summary()
 
