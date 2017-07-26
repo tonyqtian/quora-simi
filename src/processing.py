@@ -64,8 +64,8 @@ def train(args):
 	# 	test_question2, test_maxLen2 = tokenizeIt(test_question2, clean=args.rawMaterial)
 		inputLength = max(train_maxLen1, train_maxLen2, test_maxLen1, test_maxLen2)
 		logger.info('Max input length: %d ' % inputLength)
-		inputLength = 32
-		logger.info('Reset max length to 32')
+		inputLength = 30
+		logger.info('Reset max length to 30')
 	
 		tokenizer = Tokenizer(num_words=MAX_NB_WORDS)
 		tokenizer.fit_on_texts(train_question1 + train_question2 + test_question1 + test_question2)
@@ -97,6 +97,8 @@ def train(args):
 			train_x1, train_x2, train_y, test_x1, test_x2, test_ids, word_index = pkl.load(input_file)
 			logger.info('Shape of data tensor: (%d, %d)' % train_x1.shape)
 			logger.info('Shape of label tensor: (%d, )' % train_y.shape)
+		inputLength = 30
+		logger.info('Reset max length to 30')
 			
 	if args.w2v:
 		if args.w2v.endswith('.pkl'):
