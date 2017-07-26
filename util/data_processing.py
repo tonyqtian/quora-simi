@@ -3,6 +3,8 @@ Created on Mar 17, 2017
 
 @author: tonyq
 '''
+import codecs
+import csv
 
 import pandas as pd
 import numpy as np
@@ -11,13 +13,18 @@ from bs4 import BeautifulSoup
 import logging
 from keras.preprocessing.sequence import pad_sequences
 from tqdm._tqdm import tqdm
-from nltk.tokenize import word_tokenize
+
 from numpy import array, zeros
 import operator
+
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from nltk.stem import SnowballStemmer
 
 logger = logging.getLogger(__name__)
 
 uri_re = r'(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?«»“”‘’]))'
+
 
 def stripTagsAndUris(x):
 	if x:
@@ -32,7 +39,8 @@ def stripTagsAndUris(x):
 		return re.sub(uri_re, "", text)
 	else:
 		return ""
-	
+
+
 def get_words(text):
 # 	word_split = re.compile('[^a-zA-Z0-9_\\+\\-]')
 # 	return [word.strip().lower() for word in word_split.split(text)]
@@ -83,7 +91,87 @@ def get_words(text):
 	text = text.replace('"', ' ')
 	return text
 # 	return word_tokenize(text)
-	
+
+
+# The function "text_to_wordlist" is from
+# https://www.kaggle.com/currie32/quora-question-pairs/the-importance-of-cleaning-text
+def text_to_wordlist(text, remove_stopwords=False, stem_words=False):
+	# Clean the text, with the option to remove stopwords and to stem words.
+
+	# Convert words to lower case and split them
+	text = text.lower().split()
+
+	# Optionally, remove stop words
+	if remove_stopwords:
+		stops = set(stopwords.words("english"))
+		text = [w for w in text if not w in stops]
+
+	text = " ".join(text)
+
+	# Clean the text
+	text = re.sub(r"[^A-Za-z0-9^,!.\/'+-=]", " ", text)
+	text = re.sub(r"what's", "what is ", text)
+	text = re.sub(r"\'s", " ", text)
+	text = re.sub(r"\'ve", " have ", text)
+	text = re.sub(r"can't", "cannot ", text)
+	text = re.sub(r"n't", " not ", text)
+	text = re.sub(r"i'm", "i am ", text)
+	text = re.sub(r"\'re", " are ", text)
+	text = re.sub(r"\'d", " would ", text)
+	text = re.sub(r"\'ll", " will ", text)
+	text = re.sub(r",", " ", text)
+	text = re.sub(r"\.", " ", text)
+	text = re.sub(r"!", " ! ", text)
+	text = re.sub(r"\/", " ", text)
+	text = re.sub(r"\^", " ^ ", text)
+	text = re.sub(r"\+", " + ", text)
+	text = re.sub(r"\-", " - ", text)
+	text = re.sub(r"\=", " = ", text)
+	text = re.sub(r"'", " ", text)
+	text = re.sub(r"(\d+)(k)", r"\g<1>000", text)
+	text = re.sub(r":", " : ", text)
+	text = re.sub(r" e g ", " eg ", text)
+	text = re.sub(r" b g ", " bg ", text)
+	text = re.sub(r" u s ", " american ", text)
+	text = re.sub(r"\0s", "0", text)
+	text = re.sub(r" 9 11 ", "911", text)
+	text = re.sub(r"e - mail", "email", text)
+	text = re.sub(r"j k", "jk", text)
+	text = re.sub(r"\s{2,}", " ", text)
+
+	# Optionally, shorten words to their stems
+	if stem_words:
+		text = text.split()
+		stemmer = SnowballStemmer('english')
+		stemmed_words = [stemmer.stem(word) for word in text]
+		text = " ".join(stemmed_words)
+
+	# Return a list of words
+	return (text)
+
+
+def csv_processing(path, test=False):
+	texts_1 = []
+	texts_2 = []
+	labels = []
+	test_ids = []
+	with codecs.open(path, encoding='utf-8') as f:
+		reader = csv.reader(f, delimiter=',')
+		header = next(reader)
+		if test == False:
+			for values in tqdm(reader):
+				texts_1.append(text_to_wordlist(values[3]))
+				texts_2.append(text_to_wordlist(values[4]))
+				labels.append(int(values[5]))
+			return texts_1, texts_2, labels
+		else:
+			for values in tqdm(reader):
+				texts_1.append(text_to_wordlist(values[1]))
+				texts_2.append(text_to_wordlist(values[2]))
+				test_ids.append(values[0])
+			return texts_1, texts_2, test_ids
+
+
 def get_pdTable(path, notag=False):
 	logger.info(' Processing pandas csv ')
 	pdtable = pd.read_csv(path)
@@ -91,6 +179,7 @@ def get_pdTable(path, notag=False):
 		return pdtable.test_id, pdtable.question1, pdtable.question2
 	else:
 		return pdtable.id, pdtable.question1, pdtable.question2, pdtable.is_duplicate
+
 
 def text_cleaner(table):
 	textTable = []
@@ -101,6 +190,7 @@ def text_cleaner(table):
 		if len(text) > maxLen:
 			maxLen = len(text)
 	return textTable, maxLen
+
 
 def tokenizeIt(table, clean=False, addHead=None):
 	tokenizedTable = []
@@ -122,7 +212,8 @@ def tokenizeIt(table, clean=False, addHead=None):
 			if len(text) > maxLen:
 				maxLen = len(text)
 	return tokenizedTable, maxLen		
-	
+
+
 def createVocab(tableList, min_count=1, reservedList=['<pad>', '<EOF>', '<unk>']):
 	logger.info(' Creating vocabulary ')
 	contentList = []
@@ -159,6 +250,7 @@ def createVocab(tableList, min_count=1, reservedList=['<pad>', '<EOF>', '<unk>']
 	logger.info('  vocab size %i ' % len(vocabReverseDict))
 	return vocabDict, vocabReverseDict
 
+
 def word2num(contentTable, vocab, unk, maxLen, padding=None, eof=None):
 	unk_hit = 0
 	totalword = 0
@@ -185,10 +277,12 @@ def word2num(contentTable, vocab, unk, maxLen, padding=None, eof=None):
 		np_ary = array(data)
 	return np_ary
 
+
 def to_categorical2D(y, nb_classes=None):
 	if not nb_classes:
 		nb_classes = y.max()
 	return (np.arange(nb_classes) == y[:,:,None]).astype(int)
+
 
 def to_categoricalAll(y, nb_classes):
 	categorical = zeros((len(y),nb_classes))
@@ -199,6 +293,7 @@ def to_categoricalAll(y, nb_classes):
 		line_idx += 1
 	return categorical
 
+
 def categorical_toary(y, round01=False):
 	(length, nb_classes) = y.shape
 	if round01:
@@ -207,6 +302,7 @@ def categorical_toary(y, round01=False):
 	for i in range(length):
 		y_ary.append(np.argwhere(y[i,:] == 1).ravel().tolist())
 	return y_ary
+
 
 def prob_top_n(y, top=5):
 	(length, nb_classes) = y.shape
@@ -221,6 +317,7 @@ def prob_top_n(y, top=5):
 				idx_pos.append(idx)
 		y_ary.append(idx_pos)
 	return y_ary
+
 
 def embdReader(embd_path, embd_dim, word_index, max_nb_words):
 	logger.info('Indexing word vectors')
@@ -250,7 +347,8 @@ def embdReader(embd_path, embd_dim, word_index, max_nb_words):
 			reverseDict[i] = '<' + word + '>'
 	logger.info('Null word embeddings: %d' % np.sum(np.sum(embedding_matrix, axis=1) == 0))
 	return embedding_matrix, reverseDict
-	
+
+
 def w2vEmbdReader(embd_path, reVocab, embd_dim):
 	logger.info('  getting pre-trained embedding from file... ')
 	logger.info('  embedding length: %i  dim: %i  ' % (len(reVocab), embd_dim))

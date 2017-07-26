@@ -14,7 +14,7 @@ from numpy import array, squeeze, vstack, inf, nan, concatenate
 from pandas import read_csv, DataFrame
 
 from util.utils import setLogger, mkdir, print_args
-from util.data_processing import get_pdTable, text_cleaner, embdReader, tokenizeIt
+from util.data_processing import get_pdTable, text_cleaner, embdReader, tokenizeIt, csv_processing
 from util.my_layers import DenseWithMasking, Conv1DWithMasking, MaxOverTime, MeanOverTime
 from util.model_eval import PlotPic
 from src.lm_1b_model import lm_1b_infer
@@ -31,7 +31,7 @@ from keras.callbacks import ModelCheckpoint, EarlyStopping
 from src.rnn_model import getModel
 
 logger = logging.getLogger(__name__)
-MAX_NB_WORDS = 150000
+MAX_NB_WORDS = 200000
 
 def train(args):
 	timestr = time.strftime("%Y%m%d-%H%M%S-")
@@ -43,27 +43,29 @@ def train(args):
 	if args.load_input_pkl is '':
 		# process train and test data
 		logger.info('Loading training file...')
-		_, train_question1, train_question2, train_y = get_pdTable(args.train_path)
+		# _, train_question1, train_question2, train_y = get_pdTable(args.train_path)
+		train_question1, train_question2, train_y = csv_processing(args.train_path)
 		logger.info('Train csv: %d line loaded ' % len(train_question1))
 		logger.info('Loading test file...')
-		test_ids, test_question1, test_question2 = get_pdTable(args.test_path, notag=True)
+		# test_ids, test_question1, test_question2 = get_pdTable(args.test_path, notag=True)
+		test_question1, test_question2, test_ids = csv_processing(args.test_path, test=True)
 	# 	if args.predict_test:
 	# 		test_ids, test_question1, test_question2 = get_pdTable(args.test_path, notag=True)
 	# 	else:
 	# 		test_ids, test_question1, test_question2, test_y = get_pdTable(args.test_path)
 		logger.info('Test csv: %d line loaded ' % len(test_question1))
 	
-		logger.info('Text cleaning... ')
-		train_question1, train_maxLen1 = text_cleaner(train_question1)
-		train_question2, train_maxLen2 = text_cleaner(train_question2)
-		test_question1, test_maxLen1 = text_cleaner(test_question1)
-		test_question2, test_maxLen2 = text_cleaner(test_question2)
-	# 	train_question1, train_maxLen1 = tokenizeIt(train_question1, clean=args.rawMaterial)
-	# 	train_question2, train_maxLen2 = tokenizeIt(train_question2, clean=args.rawMaterial)
-	# 	test_question1, test_maxLen1 = tokenizeIt(test_question1, clean=args.rawMaterial)
-	# 	test_question2, test_maxLen2 = tokenizeIt(test_question2, clean=args.rawMaterial)
-		inputLength = max(train_maxLen1, train_maxLen2, test_maxLen1, test_maxLen2)
-		logger.info('Max input length: %d ' % inputLength)
+	# 	logger.info('Text cleaning... ')
+	# 	train_question1, train_maxLen1 = text_cleaner(train_question1)
+	# 	train_question2, train_maxLen2 = text_cleaner(train_question2)
+	# 	test_question1, test_maxLen1 = text_cleaner(test_question1)
+	# 	test_question2, test_maxLen2 = text_cleaner(test_question2)
+	# # 	train_question1, train_maxLen1 = tokenizeIt(train_question1, clean=args.rawMaterial)
+	# # 	train_question2, train_maxLen2 = tokenizeIt(train_question2, clean=args.rawMaterial)
+	# # 	test_question1, test_maxLen1 = tokenizeIt(test_question1, clean=args.rawMaterial)
+	# # 	test_question2, test_maxLen2 = tokenizeIt(test_question2, clean=args.rawMaterial)
+	# 	inputLength = max(train_maxLen1, train_maxLen2, test_maxLen1, test_maxLen2)
+	# 	logger.info('Max input length: %d ' % inputLength)
 		inputLength = 30
 		logger.info('Reset max length to 30')
 	
