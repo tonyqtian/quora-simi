@@ -35,12 +35,12 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 from sklearn.preprocessing import StandardScaler
 from tqdm._tqdm import tqdm
 
-# from util.utils import mkdir
+from util.utils import mkdir
 
 ########################################
 ## set directories and parameters
 ########################################
-BASE_DIR = '../data/'
+BASE_DIR = '../quora-data/'
 # EMBEDDING_FILE = BASE_DIR + 'glove.840B.quoraVocab.300d_sample.txt'
 # TRAIN_DATA_FILE = BASE_DIR + 'train_sample.csv'
 # TEST_DATA_FILE = BASE_DIR + 'test_sample.csv'
@@ -73,10 +73,10 @@ train_bowl_feature_path = BASE_DIR + 'train_features_1bowl.csv'
 test_bowl_feature_path = BASE_DIR + 'test_features_1bowl.csv'
 # train_bowl_feature_path = ''
 # test_bowl_feature_path = ''
-# load_train_test_pkl = ''
-# load_embd_pkl = ''
-load_train_test_pkl = BASE_DIR + '20170606-203300-input_train_test.pkl'
-load_embd_pkl = BASE_DIR + '20170606-203300-embd_dump.pkl'
+load_train_test_pkl = ''
+load_embd_pkl = ''
+# load_train_test_pkl = BASE_DIR + '20170606-203300-input_train_test.pkl'
+# load_embd_pkl = BASE_DIR + '20170606-203300-embd_dump.pkl'
 
 EPOCHES = 50
 MAX_SEQUENCE_LENGTH = 30
@@ -94,8 +94,8 @@ act = 'relu'
 re_weight = True # whether to re-weight classes to fit the 17.5% share in test set
 
 timestr = strftime("%Y%m%d-%H%M%S-")
-output_dir = '../output/' + strftime("%m%d")
-# mkdir(output_dir)
+output_dir = '../quora-output/' + strftime("%m%d")
+mkdir(output_dir)
 STAMP = 'lstm_%d_%d_%.2f_%.2f'%(num_lstm, num_dense, rate_drop_lstm, rate_drop_dense)
 
 ########################################
@@ -470,14 +470,14 @@ bst_val_score = min(hist.history['val_loss'])
 ########################################
 ## make the submission
 ########################################
-print('Start making the submission before fine-tuning')
-
-preds = model.predict([test_data_1, test_data_2, test_leaks], batch_size=8192, verbose=1)
-preds += model.predict([test_data_2, test_data_1, test_leaks], batch_size=8192, verbose=1)
-preds /= 2
-
-submission = pd.DataFrame({'test_id':test_ids, 'is_duplicate':preds.ravel()})
-submission.to_csv(output_dir + '/' + timestr + '%.4f_'%(bst_val_score)+STAMP+'.csv', index=False)
+# print('Start making the submission before fine-tuning')
+#
+# preds = model.predict([test_data_1, test_data_2, test_leaks], batch_size=8192, verbose=1)
+# preds += model.predict([test_data_2, test_data_1, test_leaks], batch_size=8192, verbose=1)
+# preds /= 2
+#
+# submission = pd.DataFrame({'test_id':test_ids, 'is_duplicate':preds.ravel()})
+# submission.to_csv(output_dir + '/' + timestr + '%.4f_'%(bst_val_score)+STAMP+'.csv', index=False)
 
 print('\a')
 sleep(0.3)
