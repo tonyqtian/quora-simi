@@ -41,6 +41,10 @@ from util.utils import mkdir
 ## set directories and parameters
 ########################################
 BASE_DIR = '../quora-data/'
+timestr = strftime("%Y%m%d-%H%M%S-")
+output_dir = '../quora-output/' + strftime("%m%d")
+mkdir(output_dir)
+
 # EMBEDDING_FILE = BASE_DIR + 'glove.840B.quoraVocab.300d_sample.txt'
 # TRAIN_DATA_FILE = BASE_DIR + 'train_sample.csv'
 # TEST_DATA_FILE = BASE_DIR + 'test_sample.csv'
@@ -73,10 +77,10 @@ train_bowl_feature_path = BASE_DIR + 'train_features_1bowl.csv'
 test_bowl_feature_path = BASE_DIR + 'test_features_1bowl.csv'
 # train_bowl_feature_path = ''
 # test_bowl_feature_path = ''
-load_train_test_pkl = ''
-load_embd_pkl = ''
-# load_train_test_pkl = BASE_DIR + '20170606-203300-input_train_test.pkl'
-# load_embd_pkl = BASE_DIR + '20170606-203300-embd_dump.pkl'
+# load_train_test_pkl = ''
+# load_embd_pkl = ''
+load_train_test_pkl = output_dir + '20170726-111903-input_train_test.pkl'
+load_embd_pkl = output_dir + '20170726-111903-embd_dump.pkl'
 
 EPOCHES = 50
 MAX_SEQUENCE_LENGTH = 30
@@ -89,14 +93,10 @@ num_lstm = np.random.randint(175, 275)
 num_dense = np.random.randint(100, 150)
 rate_drop_lstm = 0.45 + np.random.rand() * 0.15
 rate_drop_dense = 0.25 + np.random.rand() * 0.15
+STAMP = 'lstm_%d_%d_%.2f_%.2f'%(num_lstm, num_dense, rate_drop_lstm, rate_drop_dense)
 
 act = 'relu'
 re_weight = True # whether to re-weight classes to fit the 17.5% share in test set
-
-timestr = strftime("%Y%m%d-%H%M%S-")
-output_dir = '../quora-output/' + strftime("%m%d")
-mkdir(output_dir)
-STAMP = 'lstm_%d_%d_%.2f_%.2f'%(num_lstm, num_dense, rate_drop_lstm, rate_drop_dense)
 
 ########################################
 ## process texts in datasets
