@@ -42,10 +42,10 @@ def getModel(args, input_length, vocab_size, embd, feature_length=0):
 		
 	if args.bidirectional:
 		rnn_layer = Bidirectional(LSTM(rnn_dim, return_sequences=False, implementation=rnn_opt, 
-										dropout=rnn_dropout, recurrent_dropout=rnn_dropout))
+										dropout=0.0, recurrent_dropout=rnn_dropout))
 	else:
 		rnn_layer = LSTM(rnn_dim, return_sequences=False, implementation=rnn_opt, 
-						dropout=rnn_dropout, recurrent_dropout=rnn_dropout)
+						dropout=0.0, recurrent_dropout=rnn_dropout)
 
 	if args.mot_layer:
 		if args.use_mask:
