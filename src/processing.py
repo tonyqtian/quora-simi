@@ -173,7 +173,7 @@ def train(args):
 					if feature_name.startswith('z_'):
 						train_features[feature_name] = df_train[feature_name]
 
-		logger.info('Final train feature list: \n ', ','.join(list(train_features.columns.values)))
+		logger.info('Final train feature list: \n %s ' % ','.join(list(train_features.columns.values)))
 		feature_length = len(train_features.columns)
 		train_features = train_features.replace([inf, -inf, nan], 0)
 		train_features = array(train_features)
