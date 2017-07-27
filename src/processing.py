@@ -146,7 +146,8 @@ def train(args):
 # 	train_x2 = word2num(train_question2, vocabDict, unk, inputLength, padding='pre')
 # 	test_x1 = word2num(test_question1, vocabDict, unk, inputLength, padding='pre')
 # 	test_x2 = word2num(test_question2, vocabDict, unk, inputLength, padding='pre')
-	
+
+	# Loading train features
 	if args.train_feature_path is not '':
 		logger.info('Loading train features from file %s ' % args.train_feature_path)
 		df_train = read_csv(args.train_feature_path, encoding="ISO-8859-1")
@@ -159,12 +160,27 @@ def train(args):
 			train_features = df_train.iloc[:, args.fidx_start:]
 		else:
 			train_features = df_train.iloc[:, args.fidx_start:args.fidx_end]
+
+		if args.train_bowl_feature_path is not '':
+			logger.info('Loading train features from file %s ' % args.train_feature_path)
+			df_train = read_csv(args.train_bowl_feature_path, encoding="ISO-8859-1")
+			if args.bowl_feat_list is not '':
+				bowl_feat_list = args.bowl_feat_list.split(',')
+				for feature_name in bowl_feat_list:
+					train_features[feature_name.strip()] = df_train[feature_name.strip()]
+			else:
+				for feature_name in df_train.columns:
+					if feature_name.startswith('z_'):
+						train_features[feature_name] = df_train[feature_name]
+
+		logger.info('Final train feature list ', train_features.columns)
 		feature_length = len(train_features.columns)
 		train_features = train_features.replace([inf, -inf, nan], 0)
 		train_features = array(train_features)
 		logger.info('Loaded train feature shape: (%d, %d) ' % train_features.shape)
 		del df_train
 
+		# Loading test features
 		logger.info('Loading test features from file %s ' % args.test_feature_path)
 		df_test = read_csv(args.test_feature_path, encoding="ISO-8859-1")
 		if args.feature_list is not '':
@@ -176,10 +192,23 @@ def train(args):
 			test_features = df_test.iloc[:, args.fidx_start:]
 		else:
 			test_features = df_test.iloc[:, args.fidx_start:args.fidx_end]
+
+		if args.test_bowl_feature_path is not '':
+			df_test = read_csv(args.test_bowl_feature_path, encoding="ISO-8859-1")
+			if args.bowl_feat_list is not '':
+				bowl_feat_list = args.bowl_feat_list.split(',')
+				for feature_name in bowl_feat_list:
+					test_features[feature_name.strip()] = df_test[feature_name.strip()]
+			else:
+				for feature_name in df_test.columns:
+					if feature_name.startswith('z_'):
+						test_features[feature_name] = df_test[feature_name]
+
 		test_features = test_features.replace([inf, -inf, nan], 0)
 		test_features = array(test_features)
 		logger.info('Loaded test feature shape: (%d, %d) ' % test_features.shape)
 		del df_test
+
 		# Normalize Data
 		ss = StandardScaler()
 		ss.fit(vstack((train_features, test_features)))
