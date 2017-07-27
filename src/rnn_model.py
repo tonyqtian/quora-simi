@@ -28,7 +28,8 @@ mem_opt_dict = {'cpu':0, 'mem':1, 'gpu': 2}
 def getModel(args, input_length, vocab_size, embd, feature_length=0):
 	rnn_opt = mem_opt_dict[args.rnn_opt]
 	rnn_dim = args.rnn_dim
-	dropout_prob = args.dropout_prob
+	rnn_dropout = args.rnn_dropout
+	dense_dropout = args.dense_dropout
 # 	if args.activation == 'sigmoid':
 # 		final_init = 'he_normal'
 # 	else:
@@ -41,10 +42,10 @@ def getModel(args, input_length, vocab_size, embd, feature_length=0):
 		
 	if args.bidirectional:
 		rnn_layer = Bidirectional(LSTM(rnn_dim, return_sequences=False, implementation=rnn_opt, 
-										dropout=dropout_prob, recurrent_dropout=dropout_prob))
+										dropout=rnn_dropout, recurrent_dropout=rnn_dropout))
 	else:
 		rnn_layer = LSTM(rnn_dim, return_sequences=False, implementation=rnn_opt, 
-						dropout=dropout_prob, recurrent_dropout=dropout_prob)
+						dropout=rnn_dropout, recurrent_dropout=rnn_dropout)
 
 	if args.mot_layer:
 		if args.use_mask:
@@ -119,23 +120,23 @@ def getModel(args, input_length, vocab_size, embd, feature_length=0):
 	if feature_length:
 		feature_input = Input(shape=(feature_length,), dtype='float32')
 		if args.use_mask:
-			featured = DenseWithMasking(feature_length*4//7, kernel_initializer='he_uniform',
+			featured = DenseWithMasking(args.dense_dim//2, kernel_initializer='he_uniform',
 								activation='relu')(feature_input)
 		else:
-			featured = Dense(feature_length*4//7, kernel_initializer='he_uniform',
+			featured = Dense(args.dense_dim//2, kernel_initializer='he_uniform',
 								activation='relu')(feature_input)
 		merged += [featured]
 
 	merged = Concatenate()(merged)
 	merged = BatchNormalization()(merged)
-	merged = Dropout(dropout_prob)(merged)
+	merged = Dropout(dense_dropout)(merged)
 
 	if args.use_mask:
-		merged = DenseWithMasking(rnn_dim, kernel_initializer='he_uniform', activation='relu')(merged)
+		merged = DenseWithMasking(args.dense_dim, kernel_initializer='he_uniform', activation='relu')(merged)
 	else:
-		merged = Dense(rnn_dim, kernel_initializer='he_uniform', activation='relu')(merged)
+		merged = Dense(args.dense_dim, kernel_initializer='he_uniform', activation='relu')(merged)
 	merged = BatchNormalization()(merged)
-	merged = Dropout(dropout_prob)(merged)
+	merged = Dropout(dense_dropout)(merged)
 
 	if args.use_mask:
 		preds = DenseWithMasking(1, kernel_initializer='he_normal', activation='sigmoid')(merged)
