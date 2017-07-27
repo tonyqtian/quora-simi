@@ -320,6 +320,9 @@ def prob_top_n(y, top=5):
 
 
 def embdReader(embd_path, embd_dim, word_index, max_nb_words):
+	########################################
+	## index word vectors
+	########################################
 	logger.info('Indexing word vectors')
 	embeddings_index = {}
 	with open(embd_path, 'r', encoding='utf8') as f:

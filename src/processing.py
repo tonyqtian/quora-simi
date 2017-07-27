@@ -115,7 +115,9 @@ def train(args):
 			embdw2v, vocabReverseDict = embdReader(args.w2v, args.embd_dim, word_index, MAX_NB_WORDS)
 			with open(output_dir + '/'+ timestr + 'embd_dump.' + str(args.embd_dim) + 'd.pkl', 'wb') as embd_file:
 				logger.info('Dumping word embedding to pickle...')
-				pkl.dump((embdw2v, vocabReverseDict), embd_file)
+				# pkl.dump((embdw2v, vocabReverseDict), embd_file)
+				pkl.dump(embdw2v, embd_file)
+				raise RuntimeError
 
 # 	if args.load_vocab_from_file:
 # 		with open(args.load_vocab_from_file, 'rb') as vocab_file:
