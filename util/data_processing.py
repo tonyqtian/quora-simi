@@ -337,7 +337,7 @@ def embdReader(embd_path, embd_dim, word_index, max_nb_words):
 	## prepare embeddings
 	########################################
 	logger.info('Preparing embedding matrix based on given word list...')	
-	nb_words = min(max_nb_words, len(word_index))
+	nb_words = min(max_nb_words, len(word_index))+1
 	
 	embedding_matrix = np.zeros((nb_words, embd_dim))
 	reverseDict = ['']*nb_words
