@@ -310,8 +310,8 @@ if train_feature_path is not '':
 		else:
 			for feature_name in df_test.columns:
 				if feature_name.startswith('z_'):
-					print(feature_name)
-					print(df_test[feature_name])
+					# print(feature_name)
+					# print(df_test[feature_name])
 					test_features[feature_name] = df_test[feature_name]
 	print('Final test feature list ', test_features.columns)
 	test_features = test_features.replace([inf, -inf, nan], 0)

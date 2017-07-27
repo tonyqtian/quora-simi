@@ -10,7 +10,7 @@ from tqdm._tqdm import tqdm
 import logging, time
 import pickle as pkl
 import csv
-from numpy import array, squeeze, vstack, inf, nan, concatenate
+from numpy import array, squeeze, vstack, inf, nan, concatenate, random, vstack, ones
 from pandas import read_csv, DataFrame
 
 from util.utils import setLogger, mkdir, print_args
@@ -173,7 +173,7 @@ def train(args):
 					if feature_name.startswith('z_'):
 						train_features[feature_name] = df_train[feature_name]
 
-		logger.info('Final train feature list ', train_features.columns)
+		logger.info('Final train feature list: \n ', ','.join(list(train_features.columns.values)))
 		feature_length = len(train_features.columns)
 		train_features = train_features.replace([inf, -inf, nan], 0)
 		train_features = array(train_features)
@@ -216,8 +216,49 @@ def train(args):
 		test_features = ss.transform(test_features)
 		del ss
 		logger.info('Features normalized ')
-	
-# 	# Dump vocab
+
+	# train_x1_aug = vstack((train_x1, train_x2))
+	# train_x2_aug = vstack((train_x2, train_x1))
+	# train_y = concatenate((train_y, train_y))
+	# train_x = [train_x1_aug, train_x2_aug]
+	# test_x = [test_x1, test_x2]
+	# if args.train_feature_path is not '':
+	# 	train_features = vstack((train_features, train_features))
+	# 	train_x += [train_features]
+	# 	test_x +=[test_features]
+
+	########################################
+	## sample train/validation data
+	########################################
+	# np.random.seed(1234)
+	perm = random.permutation(len(train_x1))
+	idx_train = perm[:int(len(train_x1) * (1 - args.valid_split))]
+	idx_val = perm[int(len(train_x1) * (1 - args.valid_split)):]
+
+	data_1_train = vstack((train_x1[idx_train], train_x2[idx_train]))
+	data_2_train = vstack((train_x2[idx_train], train_x1[idx_train]))
+	leaks_train = vstack((train_features[idx_train], train_features[idx_train]))
+	labels_train = concatenate((train_y[idx_train], train_y[idx_train]))
+
+	data_1_val = vstack((train_x1[idx_val], train_x2[idx_val]))
+	data_2_val = vstack((train_x2[idx_val], train_x1[idx_val]))
+	leaks_val = vstack((train_features[idx_val], train_features[idx_val]))
+	labels_val = concatenate((train_y[idx_val], train_y[idx_val]))
+
+	re_weight = True  # whether to re-weight classes to fit the 17.5% share in test set
+	weight_val = ones(len(labels_val))
+	if re_weight:
+		weight_val *= 0.472001959
+		weight_val[labels_val == 0] = 1.309028344
+	########################################
+	## add class weight
+	########################################
+	if re_weight:
+		class_weight = {0: 1.309028344, 1: 0.472001959}
+	else:
+		class_weight = None
+
+	# 	# Dump vocab
 # 	if not args.load_vocab_from_file:
 # 		with open(output_dir + '/'+ timestr + 'vocab.pkl', 'wb') as vocab_file:
 # 			pkl.dump((vocabDict, vocabReverseDict), vocab_file)
@@ -260,16 +301,6 @@ def train(args):
 		with open(output_dir + '/'+ timestr + 'model_config.json', 'w') as arch:
 			arch.write(rnnmodel.to_json(indent=2))
 		logger.info('  Done')
-
-	train_x1_aug = vstack((train_x1, train_x2))
-	train_x2_aug = vstack((train_x2, train_x1))
-	train_y = concatenate((train_y, train_y))
-	train_x = [train_x1_aug, train_x2_aug]
-	test_x = [test_x1, test_x2]
-	if args.train_feature_path is not '':
-		train_features = vstack((train_features, train_features))
-		train_x += [train_features]
-		test_x +=[test_features]
 			
 	# train and test model
 	myCallbacks = []
@@ -289,9 +320,13 @@ def train(args):
 		earlystop = EarlyStopping(patience = args.earlystop, verbose=1, mode='auto')
 		myCallbacks.append(earlystop)
 			
-	rnnmodel.fit(train_x, train_y, validation_split=args.valid_split, batch_size=args.train_batch_size,
-				 epochs=args.epochs, callbacks=myCallbacks)
-	
+	# rnnmodel.fit(train_x, train_y, validation_split=args.valid_split, batch_size=args.train_batch_size,
+	# 			 epochs=args.epochs, callbacks=myCallbacks)
+	rnnmodel.fit([data_1_train, data_2_train, leaks_train], labels_train,
+					 validation_data=([data_1_val, data_2_val, leaks_val], labels_val, weight_val),
+					 epochs=args.epochs, batch_size=args.train_batch_size, shuffle=True,
+					 class_weight=class_weight, callbacks=myCallbacks)
+
 	if args.predict_test:
 		logger.info("Tuning model to best record...")
 		rnnmodel.load_weights(bst_model_path)
