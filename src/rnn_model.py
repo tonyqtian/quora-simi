@@ -13,7 +13,7 @@ from keras.layers.merge import Concatenate
 from keras.engine.topology import Input
 from keras.models import Model
 from keras.layers.normalization import BatchNormalization
-# from keras.layers import Dense
+from keras.layers import Dense, Convolution1D
 from util.my_layers import DenseWithMasking
 from util.my_layers import MeanOverTime
 from util.my_layers import Conv1DWithMasking, MaxOverTime
@@ -23,6 +23,7 @@ from tensorflow import device
 logger = logging.getLogger(__name__)
 
 mem_opt_dict = {'cpu':0, 'mem':1, 'gpu': 2}
+
 
 def getModel(args, input_length, vocab_size, embd, feature_length=0):
 	rnn_opt = mem_opt_dict[args.rnn_opt]
@@ -34,9 +35,9 @@ def getModel(args, input_length, vocab_size, embd, feature_length=0):
 # 		final_init = 'he_uniform'
 	with device('/cpu:0'):
 		if type(embd) is type(None):
-			embd_layer = Embedding(vocab_size, args.embd_dim, mask_zero=True, trainable=True)
+			embd_layer = Embedding(vocab_size, args.embd_dim, mask_zero=args.use_mask, trainable=True)
 		else:
-			embd_layer = Embedding(vocab_size, args.embd_dim, mask_zero=True, weights=[embd], trainable=False)
+			embd_layer = Embedding(vocab_size, args.embd_dim, mask_zero=args.use_mask, weights=[embd], trainable=False)
 		
 	if args.bidirectional:
 		rnn_layer = Bidirectional(LSTM(rnn_dim, return_sequences=False, implementation=rnn_opt, 
@@ -46,12 +47,19 @@ def getModel(args, input_length, vocab_size, embd, feature_length=0):
 						dropout=dropout_prob, recurrent_dropout=dropout_prob)
 
 	if args.mot_layer:
-		w2v_dense_layer = TimeDistributed(DenseWithMasking(args.embd_dim*2//3))
+		if args.use_mask:
+			w2v_dense_layer = TimeDistributed(DenseWithMasking(args.embd_dim * 2 // 3))
+		else:
+			w2v_dense_layer = TimeDistributed(Dense(args.embd_dim*2//3))
 		meanpool = MeanOverTime()
 
 	if args.cnn_dim:
-		conv1dw2 = Conv1DWithMasking(filters=args.cnn_dim, kernel_size=2, padding='valid', strides=1)
-		conv1dw3 = Conv1DWithMasking(filters=args.cnn_dim, kernel_size=3, padding='valid', strides=1)
+		if args.use_mask:
+			conv1dw2 = Conv1DWithMasking(filters=args.cnn_dim, kernel_size=2, padding='valid', strides=1)
+			conv1dw3 = Conv1DWithMasking(filters=args.cnn_dim, kernel_size=3, padding='valid', strides=1)
+		else:
+			conv1dw2 = Convolution1D(filters=args.cnn_dim, kernel_size=2, padding='valid', strides=1)
+			conv1dw3 = Convolution1D(filters=args.cnn_dim, kernel_size=3, padding='valid', strides=1)
 		maxpool = MaxOverTime()
 # 		maxpool = MaxPooling1DWithMasking(pool_size=input_length-1, padding='valid')
 	
@@ -110,7 +118,11 @@ def getModel(args, input_length, vocab_size, embd, feature_length=0):
 	
 	if feature_length:
 		feature_input = Input(shape=(feature_length,), dtype='float32')
-		featured = DenseWithMasking(feature_length*4//7, kernel_initializer='he_uniform', 
+		if args.use_mask:
+			featured = DenseWithMasking(feature_length*4//7, kernel_initializer='he_uniform',
+								activation='relu')(feature_input)
+		else:
+			featured = Dense(feature_length*4//7, kernel_initializer='he_uniform',
 								activation='relu')(feature_input)
 		merged += [featured]
 
@@ -118,11 +130,18 @@ def getModel(args, input_length, vocab_size, embd, feature_length=0):
 	merged = BatchNormalization()(merged)
 	merged = Dropout(dropout_prob)(merged)
 
-	merged = DenseWithMasking(rnn_dim, kernel_initializer='he_uniform', activation='relu')(merged)
+	if args.use_mask:
+		merged = DenseWithMasking(rnn_dim, kernel_initializer='he_uniform', activation='relu')(merged)
+	else:
+		merged = Dense(rnn_dim, kernel_initializer='he_uniform', activation='relu')(merged)
 	merged = BatchNormalization()(merged)
 	merged = Dropout(dropout_prob)(merged)
-	
-	preds = DenseWithMasking(1, kernel_initializer='he_normal', activation='sigmoid')(merged)
+
+	if args.use_mask:
+		preds = DenseWithMasking(1, kernel_initializer='he_normal', activation='sigmoid')(merged)
+	else:
+		preds = Dense(1, kernel_initializer='he_normal', activation='sigmoid')(merged)
+
 	if feature_length:
 		model = Model(inputs=[sequence_1_input, sequence_2_input, feature_input], outputs=preds)
 	else:

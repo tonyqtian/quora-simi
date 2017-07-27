@@ -54,6 +54,7 @@ parser.add_argument("--load-model-json", dest="load_model_json", type=str, metav
 parser.add_argument("--load-model-weights", dest="load_model_weights", type=str, metavar='<str>', default=None, help="(Optional) Path to the existing model weights")
 parser.add_argument("--load-vocab-from-file", dest="load_vocab_from_file", type=str, metavar='<str>', default=None, help="(Optional) Path to the existing vocab file")
 parser.add_argument("--raw-material", dest="rawMaterial", action='store_true', help="Use Raw Material")
+parser.add_argument("--use-mask", dest="use_mask", action='store_true', help="Use mask or not")
 parser.add_argument("--predict-test", dest="predict_test", action='store_true', help="Inference Mode for vector generation")
 parser.add_argument("--load-input-pkl", dest="load_input_pkl", type=str, metavar='<str>', default='', help="(Optional) Path to the existing vocab file")
 
