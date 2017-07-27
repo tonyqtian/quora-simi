@@ -245,7 +245,7 @@ def train(args):
 	leaks_val = vstack((train_features[idx_val], train_features[idx_val]))
 	labels_val = concatenate((train_y[idx_val], train_y[idx_val]))
 
-	re_weight = True  # whether to re-weight classes to fit the 17.5% share in test set
+	re_weight = False  # whether to re-weight classes to fit the 17.5% share in test set
 	weight_val = ones(len(labels_val))
 	if re_weight:
 		weight_val *= 0.472001959
