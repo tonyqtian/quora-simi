@@ -52,7 +52,6 @@ parser.add_argument("--w2v-embedding", dest="w2v", type=str, metavar='<str>', de
 parser.add_argument("--learning-rate", dest="learning_rate", type=float, metavar='<float>', default=0.01, help="Optimizer learning rate")
 parser.add_argument("--attention", dest="attention", action='store_true', help="Use Attention Wrapper")
 parser.add_argument("--save-model", dest="save_model", action='store_true', help="Save Model Parameters")
-parser.add_argument("--model", dest="model", type=str, metavar='<str>', default='rnn', help="Model Type: rnn, doc2vec")
 parser.add_argument("--bi-directional", dest="bidirectional", action='store_true', help="Use Bi-directional RNN")
 parser.add_argument("--load-model-json", dest="load_model_json", type=str, metavar='<str>', default=None, help="(Optional) Path to the existing model json")
 parser.add_argument("--load-model-weights", dest="load_model_weights", type=str, metavar='<str>', default=None, help="(Optional) Path to the existing model weights")
@@ -63,10 +62,10 @@ parser.add_argument("--predict-test", dest="predict_test", action='store_true', 
 parser.add_argument("--load-input-pkl", dest="load_input_pkl", type=str, metavar='<str>', default='', help="(Optional) Path to the existing vocab file")
 
 parser.add_argument("--vec-inference", dest="vecinf", action='store_true', help="Inference Mode for vector generation")
-parser.add_argument("--vocab_file", dest="vocab_file", type=str, metavar='<str>', default=None, help="Path to the vocab file")
-parser.add_argument("--pbtxt", dest="pbtxt", type=str, metavar='<str>', default=None, help="Path to pb text file")
-parser.add_argument("--ckpt", dest="ckpt", type=str, metavar='<str>', default=None, help="Path to check point file")
-parser.add_argument("--save_dir", dest="save_dir", type=str, metavar='<str>', default=None, help="Path to saving dump file path")
+# parser.add_argument("--vocab_file", dest="vocab_file", type=str, metavar='<str>', default=None, help="Path to the vocab file")
+# parser.add_argument("--pbtxt", dest="pbtxt", type=str, metavar='<str>', default=None, help="Path to pb text file")
+# parser.add_argument("--ckpt", dest="ckpt", type=str, metavar='<str>', default=None, help="Path to check point file")
+# parser.add_argument("--save_dir", dest="save_dir", type=str, metavar='<str>', default=None, help="Path to saving dump file path")
 
 args = parser.parse_args()
 

@@ -351,42 +351,156 @@ def train(args):
 	
 	
 def inference(args):
-	
-	raise NotImplementedError
+
 	timestr = time.strftime("%Y%m%d-%H%M%S-")
 	output_dir = args.out_dir_path + '/' + time.strftime("%m%d")
 	mkdir(output_dir)
 	setLogger(timestr, out_dir=output_dir)
 	print_args(args)
-	
-	# process train and test data
-	_, train_question1, train_question2, train_y = get_pdTable(args.train_path)
-	_, test_question1, test_question2, test_y = get_pdTable(args.test_path)
-	
-	train_question1, train_maxLen1 = tokenizeIt(train_question1, clean=args.rawMaterial, addHead='<s>')
-	train_question2, train_maxLen2 = tokenizeIt(train_question2, clean=args.rawMaterial, addHead='<s>')
-	test_question1, test_maxLen1 = tokenizeIt(test_question1, clean=args.rawMaterial, addHead='<s>')
-	test_question2, test_maxLen2 = tokenizeIt(test_question2, clean=args.rawMaterial, addHead='<s>')
-	inputLength = max(train_maxLen1, train_maxLen2, test_maxLen1, test_maxLen2)
-	print('Max input length: ', inputLength)
-	inputLength = 50
-	print('Reset max length to %d' % inputLength)
 
-	train_question1_vec = lm_1b_infer(args, inputLength, train_question1)
-	print('Train Q1 shape: ', train_question1_vec.shape)
-	train_question2_vec = lm_1b_infer(args, inputLength, train_question2)
-	print('Train Q2 shape: ', train_question2_vec.shape)
-	
-	with open(output_dir + '/' + timestr + 'train_lstm_vec.pkl', 'wb') as f:
-		pkl.dump( (train_question1_vec, train_question2_vec, train_y), f)
-		print('Training LSTM embedding file saved.')
-	
-	test_question1_vec = lm_1b_infer(args, inputLength, test_question1)
-	print('Test Q1 shape: ', test_question1_vec.shape)
-	test_question2_vec = lm_1b_infer(args, inputLength, test_question2)
-	print('Test Q2 shape: ', test_question2_vec.shape)
-	
-	with open(output_dir + '/' + timestr + 'test_lstm_vec.pkl', 'wb') as f:
-		pkl.dump( (test_question1_vec, test_question2_vec, test_y), f)
-		print('Training LSTM embedding file saved.')
+	if args.load_input_pkl is '':
+		raise NotImplementedError('only support loading testing materials from pickle')
+	else:
+		with open(args.load_input_pkl, 'rb') as input_file:
+			train_x1, train_x2, train_y, test_x1, test_x2, test_ids, word_index = pkl.load(input_file)
+			logger.info('Shape of test data tensor: (%d, %d)' % test_x1.shape)
+
+	# Loading train features
+	if args.train_feature_path is not '':
+		logger.info('Loading train features from file %s ' % args.train_feature_path)
+		df_train = read_csv(args.train_feature_path, encoding="ISO-8859-1")
+		if args.feature_list is not '':
+			feature_list = args.feature_list.split(',')
+			train_features = DataFrame()
+			for feature_name in feature_list:
+				train_features[feature_name.strip()] = df_train[feature_name.strip()]
+		elif args.fidx_end == 0:
+			train_features = df_train.iloc[:, args.fidx_start:]
+		else:
+			train_features = df_train.iloc[:, args.fidx_start:args.fidx_end]
+
+		if args.train_bowl_feature_path is not '':
+			logger.info('Loading train 1bowl features from file %s ' % args.train_bowl_feature_path)
+			df_train = read_csv(args.train_bowl_feature_path, encoding="ISO-8859-1")
+			if args.bowl_feat_list is not '':
+				bowl_feat_list = args.bowl_feat_list.split(',')
+				for feature_name in bowl_feat_list:
+					train_features[feature_name.strip()] = df_train[feature_name.strip()]
+			else:
+				for feature_name in df_train.columns:
+					if feature_name.startswith('z_'):
+						train_features[feature_name] = df_train[feature_name]
+
+		logger.info('Final train feature list: \n %s ' % ','.join(list(train_features.columns.values)))
+		feature_length = len(train_features.columns)
+		train_features = train_features.replace([inf, -inf, nan], 0)
+		train_features = array(train_features)
+		logger.info('Loaded train feature shape: (%d, %d) ' % train_features.shape)
+		del df_train
+
+		# Loading test features
+		logger.info('Loading test features from file %s ' % args.test_feature_path)
+		df_test = read_csv(args.test_feature_path, encoding="ISO-8859-1")
+		if args.feature_list is not '':
+			feature_list = args.feature_list.split(',')
+			test_features = DataFrame()
+			for feature_name in feature_list:
+				test_features[feature_name.strip()] = df_test[feature_name.strip()]
+		elif args.fidx_end == 0:
+			test_features = df_test.iloc[:, args.fidx_start:]
+		else:
+			test_features = df_test.iloc[:, args.fidx_start:args.fidx_end]
+
+		if args.test_bowl_feature_path is not '':
+			logger.info('Loading test 1bowl features from file %s ' % args.test_bowl_feature_path)
+			df_test = read_csv(args.test_bowl_feature_path, encoding="ISO-8859-1")
+			if args.bowl_feat_list is not '':
+				bowl_feat_list = args.bowl_feat_list.split(',')
+				for feature_name in bowl_feat_list:
+					test_features[feature_name.strip()] = df_test[feature_name.strip()]
+			else:
+				for feature_name in df_test.columns:
+					if feature_name.startswith('z_'):
+						test_features[feature_name] = df_test[feature_name]
+
+		test_features = test_features.replace([inf, -inf, nan], 0)
+		test_features = array(test_features)
+		logger.info('Loaded test feature shape: (%d, %d) ' % test_features.shape)
+		del df_test
+
+		# Normalize Data
+		ss = StandardScaler()
+		ss.fit(vstack((train_features, test_features)))
+		# train_features = ss.transform(train_features)
+		test_features = ss.transform(test_features)
+		del ss
+		logger.info('Test Features normalized ')
+
+	test_x = [test_x1, test_x2]
+	if args.test_feature_path is not '':
+		test_x +=[test_features]
+
+	if args.load_model_json:
+		with open(args.load_model_json, 'r') as json_file:
+			rnnmodel = model_from_json(json_file.read(),
+									custom_objects={"DenseWithMasking": DenseWithMasking,
+													"Conv1DWithMasking": Conv1DWithMasking,
+													"MaxOverTime": MaxOverTime,
+													"MeanOverTime": MeanOverTime})
+		logger.info('Loaded model from saved json')
+
+	if args.load_model_weights:
+		logger.info('Loading model from saved weights')
+		rnnmodel.load_weights(args.load_model_weights)
+
+	if args.predict_test:
+		logger.info("Predicting test file result...")
+		preds = rnnmodel.predict(test_x, batch_size=args.eval_batch_size, verbose=1)
+		preds = squeeze(preds)
+		logger.info('Write predictions into file... Total line: ', len(preds))
+		with open(output_dir + '/'+ timestr + 'predict.csv', 'w', encoding='utf8') as fwrt:
+			writer_sub = csv.writer(fwrt)
+			writer_sub.writerow(['test_id', 'is_duplicate'])
+			idx = 0
+			for itm in tqdm(preds):
+				writer_sub.writerow([idx, itm])
+				idx += 1
+
+	# raise NotImplementedError
+	# timestr = time.strftime("%Y%m%d-%H%M%S-")
+	# output_dir = args.out_dir_path + '/' + time.strftime("%m%d")
+	# mkdir(output_dir)
+	# setLogger(timestr, out_dir=output_dir)
+	# print_args(args)
+	#
+	# # process train and test data
+	# _, train_question1, train_question2, train_y = get_pdTable(args.train_path)
+	# _, test_question1, test_question2, test_y = get_pdTable(args.test_path)
+	#
+	# train_question1, train_maxLen1 = tokenizeIt(train_question1, clean=args.rawMaterial, addHead='<s>')
+	# train_question2, train_maxLen2 = tokenizeIt(train_question2, clean=args.rawMaterial, addHead='<s>')
+	# test_question1, test_maxLen1 = tokenizeIt(test_question1, clean=args.rawMaterial, addHead='<s>')
+	# test_question2, test_maxLen2 = tokenizeIt(test_question2, clean=args.rawMaterial, addHead='<s>')
+	# inputLength = max(train_maxLen1, train_maxLen2, test_maxLen1, test_maxLen2)
+	# print('Max input length: ', inputLength)
+	# inputLength = 50
+	# print('Reset max length to %d' % inputLength)
+	#
+	# train_question1_vec = lm_1b_infer(args, inputLength, train_question1)
+	# print('Train Q1 shape: ', train_question1_vec.shape)
+	# train_question2_vec = lm_1b_infer(args, inputLength, train_question2)
+	# print('Train Q2 shape: ', train_question2_vec.shape)
+	#
+	# with open(output_dir + '/' + timestr + 'train_lstm_vec.pkl', 'wb') as f:
+	# 	pkl.dump( (train_question1_vec, train_question2_vec, train_y), f)
+	# 	print('Training LSTM embedding file saved.')
+	#
+	# test_question1_vec = lm_1b_infer(args, inputLength, test_question1)
+	# print('Test Q1 shape: ', test_question1_vec.shape)
+	# test_question2_vec = lm_1b_infer(args, inputLength, test_question2)
+	# print('Test Q2 shape: ', test_question2_vec.shape)
+	#
+	# with open(output_dir + '/' + timestr + 'test_lstm_vec.pkl', 'wb') as f:
+	# 	pkl.dump( (test_question1_vec, test_question2_vec, test_y), f)
+	# 	print('Training LSTM embedding file saved.')
 	
