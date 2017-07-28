@@ -43,29 +43,25 @@ def train(args):
 	if args.load_input_pkl is '':
 		# process train and test data
 		logger.info('Loading training file...')
-		# _, train_question1, train_question2, train_y = get_pdTable(args.train_path)
-		train_question1, train_question2, train_y = csv_processing(args.train_path)
+		_, train_question1, train_question2, train_y = get_pdTable(args.train_path)
+		# train_question1, train_question2, train_y = csv_processing(args.train_path)
 		logger.info('Train csv: %d line loaded ' % len(train_question1))
 		logger.info('Loading test file...')
-		# test_ids, test_question1, test_question2 = get_pdTable(args.test_path, notag=True)
-		test_question1, test_question2, test_ids = csv_processing(args.test_path, test=True)
-	# 	if args.predict_test:
-	# 		test_ids, test_question1, test_question2 = get_pdTable(args.test_path, notag=True)
-	# 	else:
-	# 		test_ids, test_question1, test_question2, test_y = get_pdTable(args.test_path)
+		test_ids, test_question1, test_question2 = get_pdTable(args.test_path, notag=True)
+		# test_question1, test_question2, test_ids = csv_processing(args.test_path, test=True)
 		logger.info('Test csv: %d line loaded ' % len(test_question1))
 	
-	# 	logger.info('Text cleaning... ')
-	# 	train_question1, train_maxLen1 = text_cleaner(train_question1)
-	# 	train_question2, train_maxLen2 = text_cleaner(train_question2)
-	# 	test_question1, test_maxLen1 = text_cleaner(test_question1)
-	# 	test_question2, test_maxLen2 = text_cleaner(test_question2)
-	# # 	train_question1, train_maxLen1 = tokenizeIt(train_question1, clean=args.rawMaterial)
-	# # 	train_question2, train_maxLen2 = tokenizeIt(train_question2, clean=args.rawMaterial)
-	# # 	test_question1, test_maxLen1 = tokenizeIt(test_question1, clean=args.rawMaterial)
-	# # 	test_question2, test_maxLen2 = tokenizeIt(test_question2, clean=args.rawMaterial)
-	# 	inputLength = max(train_maxLen1, train_maxLen2, test_maxLen1, test_maxLen2)
-	# 	logger.info('Max input length: %d ' % inputLength)
+		logger.info('Text cleaning... ')
+		train_question1, train_maxLen1 = text_cleaner(train_question1)
+		train_question2, train_maxLen2 = text_cleaner(train_question2)
+		test_question1, test_maxLen1 = text_cleaner(test_question1)
+		test_question2, test_maxLen2 = text_cleaner(test_question2)
+	# 	train_question1, train_maxLen1 = tokenizeIt(train_question1, clean=args.rawMaterial)
+	# 	train_question2, train_maxLen2 = tokenizeIt(train_question2, clean=args.rawMaterial)
+	# 	test_question1, test_maxLen1 = tokenizeIt(test_question1, clean=args.rawMaterial)
+	# 	test_question2, test_maxLen2 = tokenizeIt(test_question2, clean=args.rawMaterial)
+		inputLength = max(train_maxLen1, train_maxLen2, test_maxLen1, test_maxLen2)
+		logger.info('Max input length: %d ' % inputLength)
 		inputLength = 30
 		logger.info('Reset max length to 30')
 	
@@ -335,7 +331,7 @@ def train(args):
 		logger.info("Predicting test file result...")
 		preds = rnnmodel.predict(test_x, batch_size=args.eval_batch_size, verbose=1)
 		preds = squeeze(preds)
-		logger.info('Write predictions into file... Total line: ', len(preds))
+		logger.info('Write predictions into file... Total line: %d ' % len(preds))
 		with open(output_dir + '/'+ timestr + 'predict.csv', 'w', encoding='utf8') as fwrt:
 			writer_sub = csv.writer(fwrt)
 			writer_sub.writerow(['test_id', 'is_duplicate'])
@@ -457,7 +453,7 @@ def inference(args):
 		logger.info("Predicting test file result...")
 		preds = rnnmodel.predict(test_x, batch_size=args.eval_batch_size, verbose=1)
 		preds = squeeze(preds)
-		logger.info('Write predictions into file... Total line: ', len(preds))
+		logger.info('Write predictions into file... Total line: %d ' % len(preds))
 		with open(output_dir + '/'+ timestr + 'predict.csv', 'w', encoding='utf8') as fwrt:
 			writer_sub = csv.writer(fwrt)
 			writer_sub.writerow(['test_id', 'is_duplicate'])
