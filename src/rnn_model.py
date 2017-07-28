@@ -45,7 +45,7 @@ def getModel(args, input_length, vocab_size, embd, feature_length=0):
 										dropout=0.0, recurrent_dropout=rnn_dropout))
 	else:
 		rnn_layer = LSTM(rnn_dim, return_sequences=False, implementation=rnn_opt, 
-						dropout=0.0, recurrent_dropout=rnn_dropout)
+						dropout=dense_dropout, recurrent_dropout=rnn_dropout)
 
 	if args.mot_layer:
 		if args.use_mask:
