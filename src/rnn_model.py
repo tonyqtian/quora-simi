@@ -42,10 +42,10 @@ def getModel(args, input_length, vocab_size, embd, feature_length=0):
 		
 	if args.bidirectional:
 		rnn_layer = Bidirectional(LSTM(rnn_dim, return_sequences=False, implementation=rnn_opt, 
-										dropout=0.0, recurrent_dropout=rnn_dropout))
+										dropout=args.input_dropout, recurrent_dropout=rnn_dropout))
 	else:
 		rnn_layer = LSTM(rnn_dim, return_sequences=False, implementation=rnn_opt, 
-						dropout=dense_dropout, recurrent_dropout=rnn_dropout)
+						dropout=args.input_dropout, recurrent_dropout=rnn_dropout)
 
 	if args.mot_layer:
 		if args.use_mask:
@@ -70,23 +70,23 @@ def getModel(args, input_length, vocab_size, embd, feature_length=0):
 # 	for _ in range(args.rnn_layer-1):
 # 		if args.bidirectional:
 # 			rnn_model.add(Bidirectional(LSTM(rnn_dim, return_sequences=True, implementation=rnn_opt, 
-# 											dropout=dropout_prob, recurrent_dropout=dropout_prob)))
+# 											dropout=args.input_dropout, recurrent_dropout=rnn_dropout)))
 # 		else:
 # 			rnn_model.add(LSTM(rnn_dim, return_sequences=True, implementation=rnn_opt, 
-# 							dropout=dropout_prob, recurrent_dropout=dropout_prob))
+# 							dropout=args.input_dropout, recurrent_dropout=rnn_dropout))
 # 
 # 	# output rnn layer	
 # 	if args.attention:
 # 		from util.attention_wrapper import Attention		
 # 		rnn_model.add(Attention(LSTM(rnn_dim, return_sequences=False, implementation=rnn_opt, 
-# 									dropout=dropout_prob, recurrent_dropout=dropout_prob)))
+# 									dropout=args.input_dropout, recurrent_dropout=rnn_dropout)))
 # 	else:
 # 		if args.bidirectional:
 # 			rnn_model.add(Bidirectional(LSTM(rnn_dim, return_sequences=False, implementation=rnn_opt,
-# 											 dropout=dropout_prob, recurrent_dropout=dropout_prob)))
+# 											 dropout=args.input_dropout, recurrent_dropout=rnn_dropout)))
 # 		else:
 # 			rnn_model.add(LSTM(rnn_dim, return_sequences=False, implementation=rnn_opt, 
-# 							dropout=dropout_prob, recurrent_dropout=dropout_prob))
+# 							dropout=args.input_dropout, recurrent_dropout=rnn_dropout))
 	
 	sequence_1_input = Input(shape=(input_length,), dtype='int32')
 	sequence_2_input = Input(shape=(input_length,), dtype='int32')

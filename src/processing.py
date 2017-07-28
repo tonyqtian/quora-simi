@@ -162,7 +162,7 @@ def train(args):
 			train_features = df_train.iloc[:, args.fidx_start:args.fidx_end]
 
 		if args.train_bowl_feature_path is not '':
-			logger.info('Loading train features from file %s ' % args.train_feature_path)
+			logger.info('Loading train 1bowl features from file %s ' % args.train_bowl_feature_path)
 			df_train = read_csv(args.train_bowl_feature_path, encoding="ISO-8859-1")
 			if args.bowl_feat_list is not '':
 				bowl_feat_list = args.bowl_feat_list.split(',')
@@ -194,6 +194,7 @@ def train(args):
 			test_features = df_test.iloc[:, args.fidx_start:args.fidx_end]
 
 		if args.test_bowl_feature_path is not '':
+			logger.info('Loading test 1bowl features from file %s ' % args.test_bowl_feature_path)
 			df_test = read_csv(args.test_bowl_feature_path, encoding="ISO-8859-1")
 			if args.bowl_feat_list is not '':
 				bowl_feat_list = args.bowl_feat_list.split(',')
@@ -245,15 +246,16 @@ def train(args):
 	# leaks_val = vstack((train_features[idx_val], train_features[idx_val]))
 	# labels_val = concatenate((train_y[idx_val], train_y[idx_val]))
 
-	re_weight = True  # whether to re-weight classes to fit the 17.5% share in test set
+	# re_weight = True  # whether to re-weight classes to fit the 17.5% share in test set
 	# weight_val = ones(len(labels_val))
 	# if re_weight:
 	# 	weight_val *= 0.472001959
 	# 	weight_val[labels_val == 0] = 1.309028344
+
 	########################################
 	## add class weight
 	########################################
-	if re_weight:
+	if args.re_weight:
 		class_weight = {0: 1.309028344, 1: 0.472001959}
 	else:
 		class_weight = None
