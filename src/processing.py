@@ -40,7 +40,7 @@ def train(args):
 	setLogger(timestr, out_dir=output_dir)
 	print_args(args)
 	
-	if args.load_input_pkl is '':
+	if args.load_input_pkl == '':
 		# process train and test data
 		logger.info('Loading training file...')
 		_, train_question1, train_question2, train_y = get_pdTable(args.train_path)
@@ -144,10 +144,10 @@ def train(args):
 # 	test_x2 = word2num(test_question2, vocabDict, unk, inputLength, padding='pre')
 
 	# Loading train features
-	if args.train_feature_path is not '':
+	if not args.train_feature_path == '':
 		logger.info('Loading train features from file %s ' % args.train_feature_path)
 		df_train = read_csv(args.train_feature_path, encoding="ISO-8859-1")
-		if args.feature_list is not '':
+		if not args.feature_list == '':
 			feature_list = args.feature_list.split(',')
 			train_features = DataFrame()
 			for feature_name in feature_list:
@@ -157,10 +157,10 @@ def train(args):
 		else:
 			train_features = df_train.iloc[:, args.fidx_start:args.fidx_end]
 
-		if args.train_bowl_feature_path is not '':
+		if not args.train_bowl_feature_path == '':
 			logger.info('Loading train 1bowl features from file %s ' % args.train_bowl_feature_path)
 			df_train = read_csv(args.train_bowl_feature_path, encoding="ISO-8859-1")
-			if args.bowl_feat_list is not '':
+			if not args.bowl_feat_list == '':
 				bowl_feat_list = args.bowl_feat_list.split(',')
 				for feature_name in bowl_feat_list:
 					train_features[feature_name.strip()] = df_train[feature_name.strip()]
@@ -179,7 +179,7 @@ def train(args):
 		# Loading test features
 		logger.info('Loading test features from file %s ' % args.test_feature_path)
 		df_test = read_csv(args.test_feature_path, encoding="ISO-8859-1")
-		if args.feature_list is not '':
+		if not args.feature_list == '':
 			feature_list = args.feature_list.split(',')
 			test_features = DataFrame()
 			for feature_name in feature_list:
@@ -189,10 +189,10 @@ def train(args):
 		else:
 			test_features = df_test.iloc[:, args.fidx_start:args.fidx_end]
 
-		if args.test_bowl_feature_path is not '':
+		if not args.test_bowl_feature_path == '':
 			logger.info('Loading test 1bowl features from file %s ' % args.test_bowl_feature_path)
 			df_test = read_csv(args.test_bowl_feature_path, encoding="ISO-8859-1")
-			if args.bowl_feat_list is not '':
+			if not args.bowl_feat_list == '':
 				bowl_feat_list = args.bowl_feat_list.split(',')
 				for feature_name in bowl_feat_list:
 					test_features[feature_name.strip()] = df_test[feature_name.strip()]
@@ -219,7 +219,7 @@ def train(args):
 	train_y = concatenate((train_y, train_y))
 	train_x = [train_x1_aug, train_x2_aug]
 	test_x = [test_x1, test_x2]
-	if args.train_feature_path is not '':
+	if not args.train_feature_path == '':
 		train_features = vstack((train_features, train_features))
 		train_x += [train_features]
 		test_x +=[test_features]
@@ -270,7 +270,7 @@ def train(args):
 													"MeanOverTime": MeanOverTime})
 		logger.info('Loaded model from saved json')
 	else:
-		if args.train_feature_path is not '':
+		if not args.train_feature_path == '':
 			rnnmodel = getModel(args, inputLength, len(word_index)+1, embd=embdw2v, feature_length=feature_length)
 		else:
 			rnnmodel = getModel(args, inputLength, len(word_index)+1, embd=embdw2v)
@@ -354,7 +354,7 @@ def inference(args):
 	setLogger(timestr, out_dir=output_dir)
 	print_args(args)
 
-	if args.load_input_pkl is '':
+	if args.load_input_pkl == '':
 		raise NotImplementedError('only support loading testing materials from pickle')
 	else:
 		with open(args.load_input_pkl, 'rb') as input_file:
@@ -362,10 +362,10 @@ def inference(args):
 			logger.info('Shape of test data tensor: (%d, %d)' % test_x1.shape)
 
 	# Loading train features
-	if args.train_feature_path is not '':
+	if not args.train_feature_path == '':
 		logger.info('Loading train features from file %s ' % args.train_feature_path)
 		df_train = read_csv(args.train_feature_path, encoding="ISO-8859-1")
-		if args.feature_list is not '':
+		if not args.feature_list == '':
 			feature_list = args.feature_list.split(',')
 			train_features = DataFrame()
 			for feature_name in feature_list:
@@ -375,10 +375,10 @@ def inference(args):
 		else:
 			train_features = df_train.iloc[:, args.fidx_start:args.fidx_end]
 
-		if args.train_bowl_feature_path is not '':
+		if not args.train_bowl_feature_path == '':
 			logger.info('Loading train 1bowl features from file %s ' % args.train_bowl_feature_path)
 			df_train = read_csv(args.train_bowl_feature_path, encoding="ISO-8859-1")
-			if args.bowl_feat_list is not '':
+			if not args.bowl_feat_list == '':
 				bowl_feat_list = args.bowl_feat_list.split(',')
 				for feature_name in bowl_feat_list:
 					train_features[feature_name.strip()] = df_train[feature_name.strip()]
@@ -397,7 +397,7 @@ def inference(args):
 		# Loading test features
 		logger.info('Loading test features from file %s ' % args.test_feature_path)
 		df_test = read_csv(args.test_feature_path, encoding="ISO-8859-1")
-		if args.feature_list is not '':
+		if not args.feature_list == '':
 			feature_list = args.feature_list.split(',')
 			test_features = DataFrame()
 			for feature_name in feature_list:
@@ -407,10 +407,10 @@ def inference(args):
 		else:
 			test_features = df_test.iloc[:, args.fidx_start:args.fidx_end]
 
-		if args.test_bowl_feature_path is not '':
+		if not args.test_bowl_feature_path == '':
 			logger.info('Loading test 1bowl features from file %s ' % args.test_bowl_feature_path)
 			df_test = read_csv(args.test_bowl_feature_path, encoding="ISO-8859-1")
-			if args.bowl_feat_list is not '':
+			if not args.bowl_feat_list == '':
 				bowl_feat_list = args.bowl_feat_list.split(',')
 				for feature_name in bowl_feat_list:
 					test_features[feature_name.strip()] = df_test[feature_name.strip()]
@@ -433,7 +433,7 @@ def inference(args):
 		logger.info('Test Features normalized ')
 
 	test_x = [test_x1, test_x2]
-	if args.test_feature_path is not '':
+	if not args.test_feature_path == '':
 		test_x +=[test_features]
 
 	if args.load_model_json:

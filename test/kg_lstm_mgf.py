@@ -257,12 +257,12 @@ else:
 ## generate leaky features
 ########################################
 
-if train_feature_path is not '':
+if not train_feature_path == '':
 	from pandas import read_csv, DataFrame
 	from numpy import array, inf, nan
 
 	df_train = read_csv(train_feature_path, encoding="ISO-8859-1")
-	if feature_list is not '':
+	if not feature_list == '':
 		feature_list = feature_list.split(',')
 		train_features = DataFrame()
 		for feature_name in feature_list:
@@ -272,9 +272,9 @@ if train_feature_path is not '':
 	else:
 		train_features = df_train.iloc[:, fidx_start:fidx_end]
 
-	if train_bowl_feature_path is not '':
+	if not train_bowl_feature_path == '':
 		df_train = read_csv(train_bowl_feature_path, encoding="ISO-8859-1")
-		if bowl_feat_list is not '':
+		if not bowl_feat_list == '':
 			bowl_feat_list = bowl_feat_list.split(',')
 			for feature_name in bowl_feat_list:
 				train_features[feature_name.strip()] = df_train[feature_name.strip()]
@@ -291,7 +291,7 @@ if train_feature_path is not '':
 	leaks = train_features
 
 	df_test = read_csv(test_feature_path, encoding="ISO-8859-1")
-	if feature_list is not '':
+	if not feature_list == '':
 		# 		feature_list = feature_list.split(',')
 		test_features = DataFrame()
 		for feature_name in feature_list:
@@ -301,9 +301,9 @@ if train_feature_path is not '':
 	else:
 		test_features = df_test.iloc[:, fidx_start:fidx_end]
 
-	if test_bowl_feature_path is not '':
+	if not test_bowl_feature_path == '':
 		df_test = read_csv(test_bowl_feature_path, encoding="ISO-8859-1")
-		if bowl_feat_list is not '':
+		if not bowl_feat_list == '':
 			# 			bowl_feat_list = bowl_feat_list.split(',')
 			for feature_name in bowl_feat_list:
 				test_features[feature_name.strip()] = df_test[feature_name.strip()]

@@ -45,7 +45,7 @@ def main():
 	
 	y_train = df_train['is_duplicate'].values
 		
-	if args.train_extra is not '':
+	if not args.train_extra == '':
 		print("Reading train 1bowl features...")
 		df_train = pd.read_csv(args.train_extra, encoding="ISO-8859-1")
 		extra_feature_list = args.extra_feature_list.split(',')
@@ -102,7 +102,7 @@ def main():
 	for feature_name in feature_list:
 		test_features[feature_name.strip()] = df_test[feature_name.strip()]
 		
-	if args.test_extra is not '':
+	if not args.test_extra == '':
 		print("Reading test 1bowl features...")
 		df_test = pd.read_csv(args.test_extra, encoding="ISO-8859-1")
 		extra_feature_list = args.extra_feature_list.split(',')
