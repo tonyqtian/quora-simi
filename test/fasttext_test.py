@@ -17,7 +17,7 @@ from gensim.models.wrappers.fasttext import FastText as FT_wrapper
 # Set FastText home to the path to the FastText executable
 ft_home = '/data2/tonyq/fastText/fasttext'
 
-from util.data_processing import get_pdTable, text_cleaner, embdReader
+from ..util.data_processing import get_pdTable, text_cleaner, embdReader
 
 # Set file names for train and test data
 data_dir = os.sep + '{}'.format(os.sep).join(['data2', 'tonyq', 'quora-data']) + os.sep
@@ -38,6 +38,7 @@ model_gensim = FT_gensim(size=100)
 model_gensim.build_vocab(train_data)
 
 # train the model
+print('Training gensim fasttext model...')
 model_gensim.train(train_data, total_examples=model_gensim.corpus_count, epochs=model_gensim.iter)
 print(model_gensim)
 
@@ -46,6 +47,7 @@ with open(data_dir + 'questions_file.txt') as fw:
         fw.write(line + '\n')
 
 # train the model
+print('Training wrapper fasttext model...')
 model_wrapper = FT_wrapper.train(ft_home, data_dir + 'questions_file.txt')
 print(model_wrapper)
 
