@@ -176,7 +176,10 @@ def get_pdTable(path, notag=False):
     logger.info(' Processing pandas csv ')
     pdtable = pd.read_csv(path)
     if notag:
-        return pdtable.test_id, pdtable.question1, pdtable.question2
+        try:
+            return pdtable.test_id, pdtable.question1, pdtable.question2
+        except AttributeError:
+            return pdtable.id, pdtable.question1, pdtable.question2
     else:
         return pdtable.id, pdtable.question1, pdtable.question2, pdtable.is_duplicate
 
