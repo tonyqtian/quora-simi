@@ -17,7 +17,7 @@ length = len(train.is_duplicate)
 del train
 
 with open("../output/0604/20170604-165432-XGB_leaky.clean.csv", "w", encoding='utf8') as fwrt:
-	writer_sub = csv.writer(fwrt)
-	writer_sub.writerow(['test_id','is_duplicate'])
-	for (theid, dup) in tqdm(fulllist, total=length):
-		writer_sub.writerow([theid, dup])
+    writer_sub = csv.writer(fwrt)
+    writer_sub.writerow(['test_id','is_duplicate'])
+    for (theid, dup) in tqdm(fulllist, total=length):
+        writer_sub.writerow([theid, dup])

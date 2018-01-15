@@ -16,6 +16,7 @@ from scipy.spatial.distance import cosine, cityblock, jaccard, canberra, euclide
 # from nltk import word_tokenize
 stop_words = stopwords.words('english')
 
+
 def wmd(s1, s2):
     s1 = str(s1).lower().split()
     s2 = str(s2).lower().split()

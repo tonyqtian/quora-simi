@@ -27,38 +27,38 @@ sigFeat = []
 countFeat = []
 unboundFeat = []
 for itm in df_train.columns:
-	print('Feature: ', itm)
-	Min = min(df_train[itm])
-	Max = max(df_train[itm])
-	Avg = np.average(df_train[itm])
-	if Min >= -1.0 and Max <= 2.0:
-		sigFeat.append(itm)
-	elif Min >= 0.0 and Max == np.around(Max):
-		countFeat.append(itm)
-	else:
-		unboundFeat.append(itm)
-		
+    print('Feature: ', itm)
+    Min = min(df_train[itm])
+    Max = max(df_train[itm])
+    Avg = np.average(df_train[itm])
+    if Min >= -1.0 and Max <= 2.0:
+        sigFeat.append(itm)
+    elif Min >= 0.0 and Max == np.around(Max):
+        countFeat.append(itm)
+    else:
+        unboundFeat.append(itm)
+
 print('Features within [-1, 1]', ','.join(sigFeat))
 for itm in sigFeat:
-	print('  Feature: ', itm)
-	print('    Min: %.4f' % min(df_train[itm]))
-	print('    Max: %.4f' % max(df_train[itm]))
-	print('    Avg: %.4f' % np.average(df_train[itm]))
-	
+    print('  Feature: ', itm)
+    print('    Min: %.4f' % min(df_train[itm]))
+    print('    Max: %.4f' % max(df_train[itm]))
+    print('    Avg: %.4f' % np.average(df_train[itm]))
+
 print('Features countable', ','.join(countFeat))
 for itm in countFeat:
-	print('  Feature: ', itm)
-	print('    Min: ', min(df_train[itm]))
-	print('    Max: ', max(df_train[itm]))
-	print('    Avg: ', np.average(df_train[itm]))
-	
+    print('  Feature: ', itm)
+    print('    Min: ', min(df_train[itm]))
+    print('    Max: ', max(df_train[itm]))
+    print('    Avg: ', np.average(df_train[itm]))
+
 print('Features unbounded', ','.join(unboundFeat))
 for itm in unboundFeat:
-	print('  Feature: ', itm)
-	print('    Min: %.4f' % min(df_train[itm]))
-	print('    Max: %.4f' % max(df_train[itm]))
-	print('    Avg: %.4f' % np.average(df_train[itm]))	
-		
+    print('  Feature: ', itm)
+    print('    Min: %.4f' % min(df_train[itm]))
+    print('    Max: %.4f' % max(df_train[itm]))
+    print('    Avg: %.4f' % np.average(df_train[itm]))
+
 # print(df_train['jaccard_distance'])
 # df_train = df_train.replace([np.inf, -np.inf], 0).replace(np.nan, 0)
 # print(df_train['wmd'])

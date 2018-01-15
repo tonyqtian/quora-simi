@@ -25,24 +25,24 @@ import pickle as pkl
 # 		return re.sub(uri_re, "", text)
 # 	else:
 # 		return ""
-	
+
 def get_words(text):
 # 	word_split = re.compile('[^a-zA-Z0-9_\\+\\-]')
 # 	return [word.strip().lower() for word in word_split.split(text)]
-	text = str(text)
-	text = text.replace('’s', ' ’s')
-	text = text.replace('…', ' ')
-	text = text.replace('”', ' ')
-	text = text.replace('“', ' ')
-	text = text.replace('‘', ' ')
-	text = text.replace('’', ' ')
-	text = text.replace('"', ' ')
-	text = text.replace("'", " ")
-	text = text.replace('-', ' ')
-	text = text.replace('/', ' ')
-	text = text.replace('\\', ' ')
-	return word_tokenize(text)
-	
+    text = str(text)
+    text = text.replace('’s', ' ’s')
+    text = text.replace('…', ' ')
+    text = text.replace('”', ' ')
+    text = text.replace('“', ' ')
+    text = text.replace('‘', ' ')
+    text = text.replace('’', ' ')
+    text = text.replace('"', ' ')
+    text = text.replace("'", " ")
+    text = text.replace('-', ' ')
+    text = text.replace('/', ' ')
+    text = text.replace('\\', ' ')
+    return word_tokenize(text)
+
 vocab = set()
 
 # with open('../data/googleWord2Vec_300M_vocablist.txt', 'r', encoding='utf8') as fhd:
@@ -65,37 +65,37 @@ del train
 contentSet = set()
 count = 0
 for (q1, q2) in tqdm(fulllist, total=length):
-	count += 1
-	try:
-		text = set(get_words(q1))
-		contentSet.update(text)
-	except AttributeError:
-		print(count)
-		print(q1)
-		print(q2)
-		raise AttributeError
-	try:
-		text = set(get_words(q2))
-		contentSet.update(text)
-	except AttributeError:
-		print(count)
-		print(q1)
-		print(q2)
-		raise AttributeError
+    count += 1
+    try:
+        text = set(get_words(q1))
+        contentSet.update(text)
+    except AttributeError:
+        print(count)
+        print(q1)
+        print(q2)
+        raise AttributeError
+    try:
+        text = set(get_words(q2))
+        contentSet.update(text)
+    except AttributeError:
+        print(count)
+        print(q1)
+        print(q2)
+        raise AttributeError
 
 with open('../output/contencVocab.pkl', 'wb') as vocab_file:
-	pkl.dump(contentSet, vocab_file)
+    pkl.dump(contentSet, vocab_file)
 
 with open('contencVocab.pkl', 'rb') as vocab_file:
-	trainSet = pkl.load(vocab_file)
+    trainSet = pkl.load(vocab_file)
 
 with open('testVocab.pkl', 'rb') as vocab_file:
-	testSet = pkl.load(vocab_file)
-	
+    testSet = pkl.load(vocab_file)
+
 contentSet = trainSet.union(testSet)
 # contentSet =testSet
 contentHit = contentSet.intersection(vocab)
-	
+
 print('Hit content %d' % len(contentHit))
 # print(contentHit)
 print('Hit rate %.4f  Vocab size %d' % (len(contentHit)/len(contentSet), len(contentSet)))

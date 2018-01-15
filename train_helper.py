@@ -70,11 +70,11 @@ parser.add_argument("--vec-inference", dest="vecinf", action='store_true', help=
 args = parser.parse_args()
 
 if args.vecinf:
-	from src.processing import inference
-	inference(args)
+    from src.processing import inference
+    inference(args)
 else:
-	from src.processing import train
-	train(args)
+    from src.processing import train
+    train(args)
 
 print('\a')
 sleep(0.3)
