@@ -8,16 +8,18 @@
 @time: 2018/01/15 午後1:17
 """
 
-import gensim
-import os
+# import gensim
+import os, sys
 # from gensim.models.word2vec import LineSentence
 from gensim.models.fasttext import FastText as FT_gensim
 from gensim.models.wrappers.fasttext import FastText as FT_wrapper
 
+sys.path.insert(0, '.')
+sys.path.insert(0, '..')
 # Set FastText home to the path to the FastText executable
 ft_home = '/data2/tonyq/fastText/fasttext'
 
-from ..util.data_processing import get_pdTable, text_cleaner, embdReader
+from util.data_processing import get_pdTable, text_cleaner, embdReader
 
 # Set file names for train and test data
 data_dir = os.sep + '{}'.format(os.sep).join(['data2', 'tonyq', 'quora-data']) + os.sep
