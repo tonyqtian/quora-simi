@@ -384,7 +384,10 @@ def embdReader(embd_path, embd_dim, word_index, max_nb_words, fasttext_source=''
         else:
             reverseDict[i] = '<' + word + '>'
         if not fasttext_source == '':
-            embedding_matrix[i][embd_dim:] = model_wrapper[word]
+            try:
+                embedding_matrix[i][embd_dim:] = model_wrapper[word]
+            except KeyError:
+                logger.info('FastText OOV: %s' % word)
     logger.info('Word embeddings shape: %r (%d+%d)' % (embedding_matrix.shape, embd_dim, ft_dim))
     logger.info('Null word embeddings: %d' % np.sum(np.sum(embedding_matrix, axis=1) == 0))
     return embedding_matrix, reverseDict
