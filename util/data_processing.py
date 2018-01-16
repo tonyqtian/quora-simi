@@ -332,7 +332,7 @@ def embdReader(embd_path, embd_dim, word_index, max_nb_words, fasttext_source=''
     logger.info('Indexing word vectors')
     embeddings_index = {}
     with open(embd_path, 'r', encoding='utf8') as f:
-        if skip_header:
+        if skip_header or embd_path.endswith('.vec'):
             next(f)
         for line in tqdm(f):
             values = line.split()
