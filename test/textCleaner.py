@@ -49,7 +49,7 @@ def get_words(text):
     # text = text.replace("+", " + ")
     # text = text.replace("-", " - ")
     # text = text.replace("=", " = ")
-    # text = text.replace("'", " ")
+    text = text.replace("'", " ")
     text = re.sub(r"(\d+)(k)", r"\g<1>000", text)
     text = text.replace(":", " : ")
     text = text.replace(" e g ", " eg ")
