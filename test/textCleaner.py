@@ -31,7 +31,7 @@ def get_words(text):
 # 	text = text.replace('/', ' ')
     text = text.replace("\\", " ")
     # Clean the text
-    # text = re.sub(r"[^A-Za-z0-9^,!.\/'+-=]", " ", text)
+    text = re.sub(r"[^A-Za-z0-9^,!.\/'+-=]", " ", text)
     text = re.sub(r"what's", "what is ", text)
     text = re.sub(r"\'s", " ", text)
     text = re.sub(r"\'ve", " have ", text)
@@ -77,7 +77,8 @@ text_material = test.question1 + test.question2 + train.question1 + train.questi
 
 train_material = []
 for line in text_material:
-    train_material.append(str(line))
+    line = get_words(line)
+    train_material.append(line)
 
 tokenizer = Tokenizer(num_words=MAX_NB_WORDS, lower=True)
 tokenizer.fit_on_texts(train_material)
