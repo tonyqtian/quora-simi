@@ -67,7 +67,7 @@ def get_words(text):
 # totalen = len(test.question1)
 # print('Test size: ', totalen)
 
-train = pd.read_csv("../quora-data/train.csv")
+train = pd.read_csv("../../quora-data/train.csv")
 totalen = len(train.question1)
 print('Train size: ', totalen)
 
