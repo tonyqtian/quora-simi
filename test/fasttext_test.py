@@ -47,6 +47,7 @@ print(model_gensim)
 with open(data_dir + 'questions_file.txt') as fw:
     for line in train_data:
         fw.write(line + '\n')
+print('text saved to %s' % (data_dir + 'questions_file.txt'))
 
 # train the model
 print('Training wrapper fasttext model...')
