@@ -365,7 +365,7 @@ def embdReader(embd_path, embd_dim, word_index, max_nb_words, fasttext_source=''
             # train the model
             print('Training wrapper fasttext model...')
             tstart = time.time()
-            model_wrapper = FT_wrapper.train(ft_home, output_dir + 'questions_file.txt')
+            model_wrapper = FT_wrapper.train(ft_home, output_dir + 'questions_file.txt', size=ft_dim)
             tend = time.time()
             print('Time elapsed for training wrapper model %.2f' % (tend - tstart))
             print(model_wrapper)
