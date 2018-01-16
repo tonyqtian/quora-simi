@@ -26,7 +26,7 @@ parser.add_argument("--out-dir", dest="out_dir_path", type=str, metavar='<str>',
 parser.add_argument("--optimizer", dest="optimizer", type=str, metavar='<str>', default='adam', help="Optimization algorithm (rmsprop|sgd|adagrad|adadelta|adam|adamax) (default=rmsprop)")
 parser.add_argument("--loss", dest="loss", type=str, metavar='<str>', default='binary_crossentropy', help="Loss function")
 parser.add_argument("--activation", dest="activation", type=str, metavar='<str>', default='relu', help="Activation function")
-parser.add_argument("--w2v-embedding", dest="w2v", type=str, metavar='<str>', default='', help="Use pre-trained word2vec embedding")
+parser.add_argument("--embedding-source", dest="w2v", type=str, metavar='<str>', default='', help="Use pre-trained embedding")
 parser.add_argument("--skip-header", dest="skip_header", action='store_true', help="Skip header of the embedding file")
 parser.add_argument("--embedding-initializer", dest="embd_init", type=str, metavar='<str>', default='glorot', help="Pre-trained embedding matrix initializer")
 parser.add_argument("--embedding-dim", dest="embd_dim", type=int, metavar='<int>', default=0, help="Embeddings dimension (default=0)")
