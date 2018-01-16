@@ -8,7 +8,8 @@ import csv
 
 import pandas as pd
 import numpy as np
-import re, sys
+import re, sys, os
+import time
 from bs4 import BeautifulSoup
 import logging
 from keras.preprocessing.sequence import pad_sequences
@@ -322,7 +323,8 @@ def prob_top_n(y, top=5):
     return y_ary
 
 
-def embdReader(embd_path, embd_dim, word_index, max_nb_words):
+def embdReader(embd_path, embd_dim, word_index, max_nb_words, fasttext_source='', ft_dim=0,
+               ft_home='/data2/tonyq/fastText/fasttext', output_dir='/data2/tonyq/quora-output/'):
     ########################################
     ## index word vectors
     ########################################
@@ -337,20 +339,53 @@ def embdReader(embd_path, embd_dim, word_index, max_nb_words):
     logger.info('Found %d word vectors in glove file.' % len(embeddings_index))
 
     ########################################
+    ## prepare fasttext
+    ########################################
+    if not fasttext_source == '':
+        from gensim.models.wrappers.fasttext import FastText as FT_wrapper
+
+        _, train_question1, train_question2, train_y = get_pdTable(fasttext_source)
+        train_question1, train_maxLen1 = text_cleaner(train_question1)
+        train_question2, train_maxLen2 = text_cleaner(train_question2)
+        train_data = train_question1 + train_question2
+        print('Train data lines %d' % len(train_data))
+
+        with open(output_dir + 'questions_file.txt', 'w') as fw:
+            for line in train_data:
+                fw.write(line + '\n')
+        print('Text saved to %s' % (output_dir + 'questions_file.txt'))
+
+        # train the model
+        print('Training wrapper fasttext model...')
+        tstart = time.time()
+        model_wrapper = FT_wrapper.train(ft_home, output_dir + 'questions_file.txt')
+        tend = time.time()
+        print('Time elapsed for training wrapper model %.2f' % (tend - tstart))
+        print(model_wrapper)
+
+        # saving a model trained via fastText wrapper
+        print('Loading fasttext wrapper model...')
+        model_wrapper.save(output_dir + 'saved_model_wrapper')
+
+
+    ########################################
     ## prepare embeddings
     ########################################
     logger.info('Preparing embedding matrix based on given word list...')
     nb_words = min(max_nb_words, len(word_index))+1
 
-    embedding_matrix = np.zeros((nb_words, embd_dim))
+    embedding_matrix = np.zeros((nb_words, embd_dim+ft_dim))
     reverseDict = ['']*nb_words
     for word, i in tqdm(word_index.items()):
         embedding_vector = embeddings_index.get(word)
         if embedding_vector is not None:
-            embedding_matrix[i] = embedding_vector
+            embedding_matrix[i][:embd_dim] = embedding_vector
             reverseDict[i] = word
         else:
             reverseDict[i] = '<' + word + '>'
+        if not fasttext_source == '':
+            embedding_matrix[i][embd_dim:] = model_wrapper[word]
+    logger.info('Word embeddings shape: %r (%d+%d)' % (embedding_matrix.shape, embd_dim, ft_dim))
     logger.info('Null word embeddings: %d' % np.sum(np.sum(embedding_matrix, axis=1) == 0))
     return embedding_matrix, reverseDict
 
