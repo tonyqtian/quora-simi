@@ -5,9 +5,9 @@ Created on Apr 23, 2017
 '''
 
 import pandas as pd
-from nltk.tokenize import word_tokenize
-from tqdm._tqdm import tqdm
-import csv
+# from nltk.tokenize import word_tokenize
+# from tqdm._tqdm import tqdm
+# import csv
 import re
 from keras.preprocessing.text import Tokenizer
 
@@ -67,7 +67,7 @@ def get_words(text):
 # totalen = len(test.question1)
 # print('Test size: ', totalen)
 
-train = pd.read_csv("train.csv")
+train = pd.read_csv("../quora-data/train.csv")
 totalen = len(train.question1)
 print('Train size: ', totalen)
 
