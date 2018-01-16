@@ -32,7 +32,7 @@ parser.add_argument("--embedding-initializer", dest="embd_init", type=str, metav
 parser.add_argument("--embedding-dim", dest="embd_dim", type=int, metavar='<int>', default=0, help="Embeddings dimension (default=0)")
 parser.add_argument("--fasttext-dim", dest="ft_dim", type=int, metavar='<int>', default=0, help="FastText embeddings dimension (default=0)")
 parser.add_argument("--fasttext-source", dest="ft_src", type=str, metavar='<str>', default='', help="Training material for FastText embeddings")
-parser.add_argument("--fix-embedding", dest="fix_embd", action='store_true', help="Fix embedding weight during training")
+parser.add_argument("--fix-weight", dest="fix_embd", action='store_true', help="Fix embedding weight during training")
 parser.add_argument("--rnn-dim", dest="rnn_dim", type=int, metavar='<int>', default=4, help="RNN dimension (default=4)")
 parser.add_argument("--cnn-dim", dest="cnn_dim", type=int, metavar='<int>', default=0, help="CNN kernels (default=0)")
 parser.add_argument("--dense-dim", dest="dense_dim", type=int, metavar='<int>', default=128, help="Fully connected layer dimension (default=128)")
