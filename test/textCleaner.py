@@ -75,8 +75,12 @@ print('Train size: ', totalen)
 text_material = test.question1 + test.question2 + train.question1 + train.question2
 # text_material = train.question2[:1000]
 
+train_material = []
+for line in text_material:
+    train_material.append(str(line))
+
 tokenizer = Tokenizer(num_words=MAX_NB_WORDS, lower=True)
-tokenizer.fit_on_texts(text_material)
+tokenizer.fit_on_texts(train_material)
 
 word_index = tokenizer.word_index
 print('Found %s unique tokens' % len(word_index))
