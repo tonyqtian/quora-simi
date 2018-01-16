@@ -329,17 +329,18 @@ def embdReader(embd_path, embd_dim, word_index, max_nb_words, fasttext_source=''
     ########################################
     ## index word vectors
     ########################################
-    logger.info('Indexing word vectors...')
-    embeddings_index = {}
-    with open(embd_path, 'r', encoding='utf8') as f:
-        if skip_header or embd_path.endswith('.vec'):
-            next(f)
-        for line in tqdm(f):
-            values = line.split()
-            word = values[0]
-            coefs = np.asarray(values[1:], dtype='float32')
-            embeddings_index[word] = coefs
-    logger.info('Found %d word vectors in embedding file.' % len(embeddings_index))
+    if not embd_path == '':
+        logger.info('Indexing word vectors...')
+        embeddings_index = {}
+        with open(embd_path, 'r', encoding='utf8') as f:
+            if skip_header or embd_path.endswith('.vec'):
+                next(f)
+            for line in tqdm(f):
+                values = line.split()
+                word = values[0]
+                coefs = np.asarray(values[1:], dtype='float32')
+                embeddings_index[word] = coefs
+        logger.info('Found %d word vectors in embedding file.' % len(embeddings_index))
 
     ########################################
     ## prepare fasttext
@@ -412,9 +413,11 @@ def embdReader(embd_path, embd_dim, word_index, max_nb_words, fasttext_source=''
                 ft_oov.append(word)
 
     logger.info('Word embeddings shape: %r (%d+%d)' % (embedding_matrix.shape, embd_dim, ft_dim))
-    logger.info('Word2Vec null embeddings: %d' % w2v_oov)
-    logger.info('FastText null embeddings: %d' % len(ft_oov))
-    logger.info('FastText OOV: %r' % ft_oov)
+    if not embd_path == '':
+        logger.info('Word2Vec null embeddings: %d' % w2v_oov)
+    if not fasttext_source == '':
+        logger.info('FastText null embeddings: %d' % len(ft_oov))
+        logger.info('FastText OOV: %r' % ft_oov)
     return embedding_matrix, reverseDict
 
 
