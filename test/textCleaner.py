@@ -61,7 +61,7 @@ def get_words(text):
     # text = text.replace("j k", "jk")
     text = re.sub(r"\s{2,}", " ", text)
 
-    return text
+    return text.strip()
 
 
 test = pd.read_csv("../../quora-data/test.csv")
