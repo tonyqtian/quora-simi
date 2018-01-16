@@ -344,7 +344,7 @@ def embdReader(embd_path, embd_dim, word_index, max_nb_words, fasttext_source=''
     if not fasttext_source == '':
         from gensim.models.wrappers.fasttext import FastText as FT_wrapper
 
-        _, train_question1, train_question2, train_y = get_pdTable(fasttext_source)
+        _, train_question1, train_question2 = get_pdTable(fasttext_source, notag=True)
         train_question1, train_maxLen1 = text_cleaner(train_question1)
         train_question2, train_maxLen2 = text_cleaner(train_question2)
         train_data = train_question1 + train_question2
