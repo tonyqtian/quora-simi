@@ -9,7 +9,7 @@
 """
 
 # import gensim
-import os, sys
+import os, sys, time
 # from gensim.models.word2vec import LineSentence
 from gensim.models.fasttext import FastText as FT_gensim
 from gensim.models.wrappers.fasttext import FastText as FT_wrapper
@@ -41,7 +41,10 @@ model_gensim.build_vocab(train_data)
 
 # train the model
 print('Training gensim fasttext model...')
+tstart = time.time()
 model_gensim.train(train_data, total_examples=model_gensim.corpus_count, epochs=model_gensim.iter)
+tend = time.time()
+print('Time elapsed for training wrapper model %r' % (tend - tstart))
 print(model_gensim)
 
 with open(data_dir + 'questions_file.txt', 'w') as fw:
@@ -51,7 +54,10 @@ print('Text saved to %s' % (data_dir + 'questions_file.txt'))
 
 # train the model
 print('Training wrapper fasttext model...')
+tstart = time.time()
 model_wrapper = FT_wrapper.train(ft_home, data_dir + 'questions_file.txt')
+tend = time.time()
+print('Time elapsed for training wrapper model %r' % (tend - tstart))
 print(model_wrapper)
 
 # saving a model trained via Gensim's fastText implementation
