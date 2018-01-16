@@ -33,7 +33,7 @@ train_question2, train_maxLen2 = text_cleaner(train_question2)
 
 train_data = train_question1 + train_question2
 print('Train data lines %d' % len(train_data))
-print(train_data[:3])
+print(train_data[:5])
 # lee_data = LineSentence(lee_train_file)
 
 # model_gensim = FT_gensim(size=100)
