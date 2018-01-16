@@ -343,30 +343,32 @@ def embdReader(embd_path, embd_dim, word_index, max_nb_words, fasttext_source=''
     ########################################
     if not fasttext_source == '':
         from gensim.models.wrappers.fasttext import FastText as FT_wrapper
+        if not fasttext_source.endswith('.bin'):
+            loaded_model = FT_wrapper.load(fasttext_source)
+            print(loaded_model)
+        else:
+            _, train_question1, train_question2 = get_pdTable(fasttext_source, notag=True)
+            train_question1, train_maxLen1 = text_cleaner(train_question1)
+            train_question2, train_maxLen2 = text_cleaner(train_question2)
+            train_data = train_question1 + train_question2
+            print('Train data lines %d' % len(train_data))
 
-        _, train_question1, train_question2 = get_pdTable(fasttext_source, notag=True)
-        train_question1, train_maxLen1 = text_cleaner(train_question1)
-        train_question2, train_maxLen2 = text_cleaner(train_question2)
-        train_data = train_question1 + train_question2
-        print('Train data lines %d' % len(train_data))
+            with open(output_dir + 'questions_file.txt', 'w') as fw:
+                for line in train_data:
+                    fw.write(line + '\n')
+            print('Text saved to %s' % (output_dir + 'questions_file.txt'))
 
-        with open(output_dir + 'questions_file.txt', 'w') as fw:
-            for line in train_data:
-                fw.write(line + '\n')
-        print('Text saved to %s' % (output_dir + 'questions_file.txt'))
+            # train the model
+            print('Training wrapper fasttext model...')
+            tstart = time.time()
+            model_wrapper = FT_wrapper.train(ft_home, output_dir + 'questions_file.txt')
+            tend = time.time()
+            print('Time elapsed for training wrapper model %.2f' % (tend - tstart))
+            print(model_wrapper)
 
-        # train the model
-        print('Training wrapper fasttext model...')
-        tstart = time.time()
-        model_wrapper = FT_wrapper.train(ft_home, output_dir + 'questions_file.txt')
-        tend = time.time()
-        print('Time elapsed for training wrapper model %.2f' % (tend - tstart))
-        print(model_wrapper)
-
-        # saving a model trained via fastText wrapper
-        print('Loading fasttext wrapper model...')
-        model_wrapper.save(output_dir + 'saved_model_wrapper')
-
+            # saving a model trained via fastText wrapper
+            print('Loading fasttext wrapper model...')
+            model_wrapper.save(output_dir + 'saved_model_wrapper')
 
     ########################################
     ## prepare embeddings
@@ -374,7 +376,17 @@ def embdReader(embd_path, embd_dim, word_index, max_nb_words, fasttext_source=''
     logger.info('Preparing embedding matrix based on given word list...')
     nb_words = min(max_nb_words, len(word_index))+1
 
-    embedding_matrix = np.zeros((nb_words, embd_dim+ft_dim))
+    w2v_oov = 0
+    ft_oov = []
+    # zero initialization of embedding matrix
+    # embedding_matrix = np.zeros((nb_words, embd_dim+ft_dim))
+
+    # glorot uniform initialization of embedding matrix
+    scale = 1 / nb_words              # fan_in
+    # scale = 1 / (embd_dim + ft_dim)   # fan_out
+    limit = np.sqrt(3. * scale)
+    embedding_matrix = np.random.uniform(low=-limit, high=limit, size=(nb_words, embd_dim+ft_dim))
+
     reverseDict = ['']*nb_words
     for word, i in tqdm(word_index.items()):
         embedding_vector = embeddings_index.get(word)
@@ -383,13 +395,17 @@ def embdReader(embd_path, embd_dim, word_index, max_nb_words, fasttext_source=''
             reverseDict[i] = word
         else:
             reverseDict[i] = '<' + word + '>'
+            w2v_oov += 1
         if not fasttext_source == '':
             try:
                 embedding_matrix[i][embd_dim:] = model_wrapper[word]
             except KeyError:
-                logger.info('FastText OOV: %s' % word)
+                ft_oov.append(word)
+
     logger.info('Word embeddings shape: %r (%d+%d)' % (embedding_matrix.shape, embd_dim, ft_dim))
-    logger.info('Null word embeddings: %d' % np.sum(np.sum(embedding_matrix, axis=1) == 0))
+    logger.info('Word2Vec null embeddings: %d' % w2v_oov)
+    logger.info('FastText null embeddings: %d' % len(ft_oov))
+    logger.info('FastText OOV: %r' % ft_oov)
     return embedding_matrix, reverseDict
 
 
