@@ -41,8 +41,8 @@ def get_words(text):
     text = text.replace("'re", " are ")
     text = text.replace("'d", " would ")
     text = text.replace("'ll", " will ")
-    # text = text.replace(",", " ")
-    # text = text.replace(".", " ")
+    text = text.replace(",", " , ")
+    text = text.replace(".", " . ")
     text = text.replace("!", " ! ")
     # text = text.replace("/", " ")
     # text = text.replace("^", " ^ ")
@@ -87,7 +87,35 @@ word_index = tokenizer.word_index
 print('Found %s unique tokens' % len(word_index))
 
 sorted_word_freqs = sorted(tokenizer.word_counts.items(), key=operator.itemgetter(1), reverse=True)
-print(sorted_word_freqs[500:])
+print(sorted_word_freqs[-500:])
+
+word_set = set([])
+for ky, vl in tokenizer.word_counts.items():
+    word_set.add(ky)
+print('Total word in count %d' % len(word_set))
+
+fasttext_set = set([])
+with open('/data2/tonyq/quora-data/wiki-news-300d-1M-subword.vec') as f:
+    f.next()
+    for line in f:
+        fasttext_set.add(line.split(' ')[0])
+print("Total word in fasttext count %d" % len(fasttext_set))
+
+covered = len(word_set.intersection(fasttext_set))
+uncovered = len(word_set.difference(fasttext_set))
+print("Quora word in fasttext %d (%.2f)" % (covered, 100*covered/len(word_set)))
+print("Quora word not in fasttext %d (%.2f)" % (uncovered, 100*uncovered/len(word_set)))
+
+w2v_set = set([])
+with open('/data2/tonyq/quora-data/glove.840B.quoraVocab.300d.txt') as f:
+    for line in f:
+        w2v_set.add(line.split(' ')[0])
+print("Total word in word2vec count %d" % len(w2v_set))
+
+covered = len(word_set.intersection(w2v_set))
+uncovered = len(word_set.difference(w2v_set))
+print("Quora word in word2vec %d (%.2f)" % (covered, 100*covered/len(word_set)))
+print("Quora word not in word2vec %d (%.2f)" % (uncovered, 100*uncovered/len(word_set)))
 
 # # fulllist = zip(train.id, train.question1, train.question2, train.is_duplicate)
 # fulllist = zip(train.test_id, train.question1, train.question2)
