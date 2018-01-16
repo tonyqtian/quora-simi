@@ -343,7 +343,7 @@ def embdReader(embd_path, embd_dim, word_index, max_nb_words, fasttext_source=''
     ########################################
     if not fasttext_source == '':
         from gensim.models.wrappers.fasttext import FastText as FT_wrapper
-        if not fasttext_source.endswith('.bin'):
+        if fasttext_source.endswith('.bin'):
             loaded_model = FT_wrapper.load(fasttext_source)
             print(loaded_model)
         else:
@@ -368,7 +368,7 @@ def embdReader(embd_path, embd_dim, word_index, max_nb_words, fasttext_source=''
 
             # saving a model trained via fastText wrapper
             print('Loading fasttext wrapper model...')
-            model_wrapper.save(output_dir + 'saved_model_wrapper')
+            model_wrapper.save(output_dir + 'saved_model_wrapper.bin')
 
     ########################################
     ## prepare embeddings
