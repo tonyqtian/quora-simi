@@ -35,18 +35,18 @@ train_data = train_question1 + train_question2
 print('Train data lines %d' % len(train_data))
 # lee_data = LineSentence(lee_train_file)
 
-model_gensim = FT_gensim(size=100)
-
-# build the vocabulary
-model_gensim.build_vocab(train_data)
-
-# train the model
-print('Training gensim fasttext model...')
-tstart = time.time()
-model_gensim.train(train_data, total_examples=model_gensim.corpus_count, epochs=model_gensim.iter)
-tend = time.time()
-print('Time elapsed for training wrapper model %r' % (tend - tstart))
-print(model_gensim)
+# model_gensim = FT_gensim(size=100)
+#
+# # build the vocabulary
+# model_gensim.build_vocab(train_data)
+#
+# # train the model
+# print('Training gensim fasttext model...')
+# tstart = time.time()
+# model_gensim.train(train_data, total_examples=model_gensim.corpus_count, epochs=model_gensim.iter)
+# tend = time.time()
+# print('Time elapsed for training wrapper model %.2f' % (tend - tstart))
+# print(model_gensim)
 
 with open(data_dir + 'questions_file.txt', 'w') as fw:
     for line in train_data:
@@ -58,14 +58,14 @@ print('Training wrapper fasttext model...')
 tstart = time.time()
 model_wrapper = FT_wrapper.train(ft_home, data_dir + 'questions_file.txt')
 tend = time.time()
-print('Time elapsed for training wrapper model %r' % (tend - tstart))
+print('Time elapsed for training wrapper model %.2f' % (tend - tstart))
 print(model_wrapper)
 
-# saving a model trained via Gensim's fastText implementation
-print('Loading fasttext gensim model...')
-model_gensim.save(output_dir + 'saved_model_gensim')
-loaded_model = FT_gensim.load(output_dir + 'saved_model_gensim')
-print(loaded_model)
+# # saving a model trained via Gensim's fastText implementation
+# print('Loading fasttext gensim model...')
+# model_gensim.save(output_dir + 'saved_model_gensim')
+# loaded_model = FT_gensim.load(output_dir + 'saved_model_gensim')
+# print(loaded_model)
 
 # saving a model trained via fastText wrapper
 print('Loading fasttext wrapper model...')
@@ -73,7 +73,7 @@ model_wrapper.save(output_dir + 'saved_model_wrapper')
 loaded_model = FT_wrapper.load(output_dir + 'saved_model_wrapper')
 print(loaded_model)
 
-print('night and nights')
+print('night and nights?')
 print('night' in model_wrapper.wv.vocab)
 print('nights' in model_wrapper.wv.vocab)
 print('night vec:')
