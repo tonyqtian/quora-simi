@@ -9,6 +9,7 @@ import pandas as pd
 # from tqdm._tqdm import tqdm
 # import csv
 import re
+import operator
 from keras.preprocessing.text import Tokenizer
 
 MAX_NB_WORDS = 200000
@@ -63,7 +64,7 @@ def get_words(text):
     return text
 
 
-# test = pd.read_csv("test.csv")
+# test = pd.read_csv("../../quora-data/test.csv")
 # totalen = len(test.question1)
 # print('Test size: ', totalen)
 
@@ -79,8 +80,9 @@ tokenizer.fit_on_texts(text_material)
 
 word_index = tokenizer.word_index
 print('Found %s unique tokens' % len(word_index))
-print(len(tokenizer.word_counts))
-print(tokenizer.word_counts)
+
+sorted_word_freqs = sorted(tokenizer.word_counts.items(), key=operator.itemgetter(1), reverse=True)
+print(sorted_word_freqs[:10])
 
 # # fulllist = zip(train.id, train.question1, train.question2, train.is_duplicate)
 # fulllist = zip(train.test_id, train.question1, train.question2)
