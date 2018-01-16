@@ -64,16 +64,16 @@ def get_words(text):
     return text
 
 
-# test = pd.read_csv("../../quora-data/test.csv")
-# totalen = len(test.question1)
-# print('Test size: ', totalen)
+test = pd.read_csv("../../quora-data/test.csv")
+totalen = len(test.question1)
+print('Test size: ', totalen)
 
 train = pd.read_csv("../../quora-data/train.csv")
 totalen = len(train.question1)
 print('Train size: ', totalen)
 
-# text_material = test.question1 + test.question2 + train.question1 + train.question2
-text_material = train.question2[:1000]
+text_material = test.question1 + test.question2 + train.question1 + train.question2
+# text_material = train.question2[:1000]
 
 tokenizer = Tokenizer(num_words=MAX_NB_WORDS, lower=True)
 tokenizer.fit_on_texts(text_material)
@@ -82,7 +82,7 @@ word_index = tokenizer.word_index
 print('Found %s unique tokens' % len(word_index))
 
 sorted_word_freqs = sorted(tokenizer.word_counts.items(), key=operator.itemgetter(1), reverse=True)
-print(sorted_word_freqs[:10])
+print(sorted_word_freqs[500:])
 
 # # fulllist = zip(train.id, train.question1, train.question2, train.is_duplicate)
 # fulllist = zip(train.test_id, train.question1, train.question2)
