@@ -44,7 +44,7 @@ print('Training gensim fasttext model...')
 model_gensim.train(train_data, total_examples=model_gensim.corpus_count, epochs=model_gensim.iter)
 print(model_gensim)
 
-with open(data_dir + 'questions_file.txt') as fw:
+with open(data_dir + 'questions_file.txt', 'w') as fw:
     for line in train_data:
         fw.write(line + '\n')
 print('text saved to %s' % (data_dir + 'questions_file.txt'))
