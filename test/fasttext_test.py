@@ -24,7 +24,7 @@ from util.data_processing import get_pdTable, text_cleaner, embdReader
 # Set file names for train and test data
 data_dir = os.sep + '{}'.format(os.sep).join(['data2', 'tonyq', 'quora-data']) + os.sep
 output_dir = os.sep + '{}'.format(os.sep).join(['data2', 'tonyq', 'quora-output']) + os.sep
-csv_train_file = data_dir + 'train010.csv'
+csv_train_file = data_dir + 'train.csv'
 
 _, train_question1, train_question2, train_y = get_pdTable(csv_train_file)
 
@@ -74,13 +74,12 @@ print(model_wrapper['night'])
 print('nights vec:')
 print(model_wrapper['nights'])
 
-print('night and nights similarity: %r' % model_wrapper.similarity("night", "nights"))
-print('most similar to nights: ')
-print(model_wrapper.most_similar("nights"))
+print('night and nights similarity: %.4f' % model_wrapper.similarity("night", "nights"))
+print('most similar to nights: %r' % model_wrapper.most_similar("nights"))
 
-print('n similarity %r' % model_wrapper.n_similarity(['sushi', 'shop'], ['japanese', 'restaurant']) )
+print('n similarity %.4f' % model_wrapper.n_similarity(['sushi', 'shop'], ['japanese', 'restaurant']) )
 
-print('doesnt match %r' % model_wrapper.doesnt_match("breakfast cereal dinner lunch".split()) )
+print('doesnt match %r' % model_wrapper.doesnt_match("breakfast cereal dinner lunch chopper yabadiabado".split()) )
 
 print('most similar %r' % model_wrapper.most_similar(positive=['baghdad', 'england'], negative=['london']) )
 
