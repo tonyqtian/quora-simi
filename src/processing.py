@@ -10,7 +10,7 @@ from tqdm._tqdm import tqdm
 import logging, time
 import pickle as pkl
 import csv
-from numpy import array, squeeze, vstack, inf, nan, concatenate, random, vstack, ones
+from numpy import array, squeeze, vstack, inf, nan, concatenate, random, ones
 from pandas import read_csv, DataFrame
 
 from util.utils import setLogger, mkdir, print_args
