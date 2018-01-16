@@ -98,7 +98,7 @@ def train(args):
         inputLength = 30
         logger.info('Reset max length to 30')
 
-    if args.w2v:
+    if args.w2v or args.ft_src:
         if args.w2v.endswith('.pkl'):
             with open(args.w2v, 'rb') as embd_file:
                 logger.info('Loading word embedding from pickle...')
@@ -109,10 +109,13 @@ def train(args):
         else:
             logger.info('Loading word embedding from text file...')
             embdw2v, vocabReverseDict = embdReader(args.w2v, args.embd_dim, word_index, MAX_NB_WORDS,
-                                                   fasttext_source=args.ft_src, ft_dim=args.ft_dim)
+                                                   fasttext_source=args.ft_src, ft_dim=args.ft_dim,
+                                                   skip_header=args.skip_header, initializer=args.embd_init)
             with open(output_dir + '/'+ timestr + 'embd_dump.' + str(args.embd_dim) + 'd.pkl', 'wb') as embd_file:
                 logger.info('Dumping word embedding to pickle...')
                 pkl.dump((embdw2v, vocabReverseDict), embd_file)
+    else:
+        embdw2v = None
 
 # 	if args.load_vocab_from_file:
 # 		with open(args.load_vocab_from_file, 'rb') as vocab_file:
@@ -271,10 +274,10 @@ def train(args):
                                                     "MeanOverTime": MeanOverTime})
         logger.info('Loaded model from saved json')
     else:
-        if not args.train_feature_path == '':
-            rnnmodel = getModel(args, inputLength, len(word_index)+1, embd=embdw2v, feature_length=feature_length)
-        else:
+        if args.train_feature_path == '':
             rnnmodel = getModel(args, inputLength, len(word_index)+1, embd=embdw2v)
+        else:
+            rnnmodel = getModel(args, inputLength, len(word_index)+1, embd=embdw2v, feature_length=feature_length)
 
     if args.load_model_weights:
         rnnmodel.load_weights(args.load_model_weights)

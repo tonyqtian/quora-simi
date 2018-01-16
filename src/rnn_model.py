@@ -34,11 +34,15 @@ def getModel(args, input_length, vocab_size, embd, feature_length=0):
 # 		final_init = 'he_normal'
 # 	else:
 # 		final_init = 'he_uniform'
+    if args.fix_embd:
+        trainable = False
+    else:
+        trainable = True
     with device('/cpu:0'):
-        if type(embd) is type(None):
-            embd_layer = Embedding(vocab_size, (args.embd_dim+args.ft_dim), mask_zero=args.use_mask, trainable=True)
+        if embd is None:
+            embd_layer = Embedding(vocab_size, (args.embd_dim+args.ft_dim), mask_zero=args.use_mask, trainable=trainable)
         else:
-            embd_layer = Embedding(vocab_size, (args.embd_dim+args.ft_dim), mask_zero=args.use_mask, weights=[embd], trainable=True)
+            embd_layer = Embedding(vocab_size, (args.embd_dim+args.ft_dim), mask_zero=args.use_mask, weights=[embd], trainable=trainable)
 
     if args.bidirectional:
         rnn_layer = Bidirectional(LSTM(rnn_dim, return_sequences=False, implementation=rnn_opt,

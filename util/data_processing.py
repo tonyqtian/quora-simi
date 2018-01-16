@@ -324,13 +324,16 @@ def prob_top_n(y, top=5):
 
 
 def embdReader(embd_path, embd_dim, word_index, max_nb_words, fasttext_source='', ft_dim=0,
-               ft_home='/data2/tonyq/fastText/fasttext', output_dir='/data2/tonyq/quora-output/'):
+               ft_home='/data2/tonyq/fastText/fasttext', output_dir='/data2/tonyq/quora-output/', skip_header=False,
+               initializer='glorot'):
     ########################################
     ## index word vectors
     ########################################
     logger.info('Indexing word vectors')
     embeddings_index = {}
     with open(embd_path, 'r', encoding='utf8') as f:
+        if skip_header:
+            next(f)
         for line in tqdm(f):
             values = line.split()
             word = values[0]
@@ -378,28 +381,34 @@ def embdReader(embd_path, embd_dim, word_index, max_nb_words, fasttext_source=''
 
     w2v_oov = 0
     ft_oov = []
-    # zero initialization of embedding matrix
-    # embedding_matrix = np.zeros((nb_words, embd_dim+ft_dim))
-
-    # glorot uniform initialization of embedding matrix
-    scale = 1 / nb_words              # fan_in
-    # scale = 1 / (embd_dim + ft_dim)   # fan_out
-    limit = np.sqrt(3. * scale)
-    embedding_matrix = np.random.uniform(low=-limit, high=limit, size=(nb_words, embd_dim+ft_dim))
+    if initializer == 'zero':
+        # zero initialization of embedding matrix
+        embedding_matrix = np.zeros((nb_words, embd_dim+ft_dim))
+    elif initializer == 'glorot':
+        # glorot uniform initialization of embedding matrix
+        scale = 1 / nb_words              # fan_in
+        # scale = 1 / (embd_dim + ft_dim)   # fan_out
+        limit = np.sqrt(3. * scale)
+        embedding_matrix = np.random.uniform(low=-limit, high=limit, size=(nb_words, embd_dim+ft_dim))
+    else:
+        raise NotImplementedError
 
     reverseDict = ['']*nb_words
     for word, i in tqdm(word_index.items()):
-        embedding_vector = embeddings_index.get(word)
-        if embedding_vector is not None:
-            embedding_matrix[i][:embd_dim] = embedding_vector
-            reverseDict[i] = word
-        else:
-            reverseDict[i] = '<' + word + '>'
-            w2v_oov += 1
+        if not embd_path == '':
+            embedding_vector = embeddings_index.get(word)
+            if embedding_vector is not None:
+                embedding_matrix[i][:embd_dim] = embedding_vector
+                reverseDict[i] = word
+            else:
+                reverseDict[i] = '<' + word + '>'
+                w2v_oov += 1
         if not fasttext_source == '':
             try:
                 embedding_matrix[i][embd_dim:] = model_wrapper[word]
+                reverseDict[i] = word
             except KeyError:
+                reverseDict[i] = '<' + word + '>'
                 ft_oov.append(word)
 
     logger.info('Word embeddings shape: %r (%d+%d)' % (embedding_matrix.shape, embd_dim, ft_dim))
