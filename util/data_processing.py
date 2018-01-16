@@ -89,7 +89,7 @@ def get_words(text):
 
     text = text.replace("\\", " ")
     text = text.replace('"', ' ')
-    return text
+    return text.strip()
 # 	return word_tokenize(text)
 
 
