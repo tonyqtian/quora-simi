@@ -96,7 +96,7 @@ print('Total word in count %d' % len(word_set))
 
 fasttext_set = set([])
 with open('/data2/tonyq/quora-data/wiki-news-300d-1M-subword.vec') as f:
-    f.next()
+    next(f)
     for line in f:
         fasttext_set.add(line.split(' ')[0])
 print("Total word in fasttext count %d" % len(fasttext_set))
