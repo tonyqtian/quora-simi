@@ -329,7 +329,7 @@ def embdReader(embd_path, embd_dim, word_index, max_nb_words, fasttext_source=''
     ########################################
     ## index word vectors
     ########################################
-    logger.info('Indexing word vectors')
+    logger.info('Indexing word vectors...')
     embeddings_index = {}
     with open(embd_path, 'r', encoding='utf8') as f:
         if skip_header or embd_path.endswith('.vec'):
@@ -339,7 +339,7 @@ def embdReader(embd_path, embd_dim, word_index, max_nb_words, fasttext_source=''
             word = values[0]
             coefs = np.asarray(values[1:], dtype='float32')
             embeddings_index[word] = coefs
-    logger.info('Found %d word vectors in glove file.' % len(embeddings_index))
+    logger.info('Found %d word vectors in embedding file.' % len(embeddings_index))
 
     ########################################
     ## prepare fasttext
