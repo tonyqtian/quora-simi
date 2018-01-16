@@ -101,21 +101,33 @@ class Evaluator(Callback):
 
     def plothem(self):
         training_epochs = [i+1 for i in range(len(self.losses))]
+
         plt.plot(training_epochs, self.losses, 'b', label='Train Loss')
-        plt.plot(training_epochs, self.accs, 'r.', label='Train Metric')
         plt.plot(training_epochs, self.val_losses, 'g', label='Valid Loss')
+        plt.legend()
+        plt.xlabel('epochs')
+        plt.savefig(self.out_dir + '/' + self.timestr + 'TrainLoss.png')
+        plt.close()
+
+        plt.plot(training_epochs, self.accs, 'r.', label='Train Metric')
         plt.plot(training_epochs, self.val_accs, 'y.', label='Valid Metric')
         plt.legend()
         plt.xlabel('epochs')
-        plt.savefig(self.out_dir + '/' + self.timestr + 'LossAccuracy.png')
+        plt.savefig(self.out_dir + '/' + self.timestr + 'TrainAcc.png')
         plt.close()
+
         plt.plot(training_epochs, self.test_losses, 'k', label='Test Loss')
+        plt.legend()
+        plt.xlabel('epochs')
+        plt.savefig(self.out_dir + '/' + self.timestr + 'TestLoss.png')
+        plt.close()
+
         plt.plot(training_epochs, self.test_accs, 'c.', label='Test Metric')
         if self.evl_pred:
             plt.plot(training_epochs, self.test_precisions, 'g.', label='Test Precision')
         plt.legend()
         plt.xlabel('epochs')
-        plt.savefig(self.out_dir + '/' + self.timestr + 'TestScore.png')
+        plt.savefig(self.out_dir + '/' + self.timestr + 'TestMetric.png')
         plt.close()
 
     def print_pred(self, infers, preds, reals):

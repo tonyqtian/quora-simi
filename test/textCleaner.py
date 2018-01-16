@@ -95,7 +95,7 @@ for ky, vl in tokenizer.word_counts.items():
 print('Total word in count %d' % len(word_set))
 
 fasttext_set = set([])
-with open('/data2/tonyq/quora-data/wiki-news-300d-1M-subword.vec') as f:
+with open('/data2/tonyq/quora-data/crawl-300d-2M.vec') as f:
     next(f)
     for line in f:
         fasttext_set.add(line.split(' ')[0])
