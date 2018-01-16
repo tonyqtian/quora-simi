@@ -117,10 +117,10 @@ uncovered = len(word_set.difference(w2v_set))
 print("Quora word in word2vec %d (%.2f%%)" % (covered, 100*covered/len(word_set)))
 print("Quora word not in word2vec %d (%.2f%%)" % (uncovered, 100*uncovered/len(word_set)))
 
-covered = word_set.difference(w2v_set).intersection(fasttext_set)
+covered = len(word_set.difference(w2v_set).intersection(fasttext_set))
 print("Quora word not in word2vec but in fasttext %d (%.2f%%)" % (covered, 100*covered/len(word_set)))
 
-covered = word_set.difference(fasttext_set).intersection(w2v_set)
+covered = len(word_set.difference(fasttext_set).intersection(w2v_set))
 print("Quora word not in fasttext but in word2vec %d (%.2f%%)" % (covered, 100*covered/len(word_set)))
 
 # # fulllist = zip(train.id, train.question1, train.question2, train.is_duplicate)
