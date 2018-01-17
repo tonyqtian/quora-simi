@@ -36,13 +36,19 @@ class PlotPic(Callback):
 
     def plothem(self):
         training_epochs = [i+1 for i in range(len(self.losses))]
+
         plt.plot(training_epochs, self.losses, 'b', label='Train Loss')
-        plt.plot(training_epochs, self.accs, 'r.', label='Train Metric')
         plt.plot(training_epochs, self.val_losses, 'g', label='Valid Loss')
+        plt.legend()
+        plt.xlabel('epochs')
+        plt.savefig(self.out_dir + '/' + self.timestr + 'TrainLoss.png')
+        plt.close()
+
+        plt.plot(training_epochs, self.accs, 'r.', label='Train Metric')
         plt.plot(training_epochs, self.val_accs, 'y.', label='Valid Metric')
         plt.legend()
         plt.xlabel('epochs')
-        plt.savefig(self.out_dir + '/' + self.timestr + 'LossAccuracy.png')
+        plt.savefig(self.out_dir + '/' + self.timestr + 'TrainAcc.png')
         plt.close()
 
 class Evaluator(Callback):
