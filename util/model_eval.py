@@ -214,6 +214,8 @@ class TrainLogger(Callback):
         for ky, vl in row_dict.items():
             if ky == 'epoch':
                 outputlist.append("%s %d" % (ky, vl))
-            else:
+            elif ky.endswith('acc'):
                 outputlist.append("%s %.2f%%" % (ky, vl*100))
+            else:
+                outputlist.append("%s %.4f" % (ky, vl))
         self.logger.info("\n" + " | ".join(outputlist))
