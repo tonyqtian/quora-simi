@@ -93,9 +93,10 @@ def train(args):
             test_y = array(test_y)
 
         del sequences_1, sequences_2, test_sequences_1, test_sequences_2
-        with open(output_dir + '/'+ timestr + 'input_train_test.pkl', 'wb') as input_file:
-            logger.info('Dumping processed input to pickle...')
-            pkl.dump((train_x1, train_x2, train_y, test_x1, test_x2, test_ids, word_index), input_file)
+        if args.save_model:
+            with open(output_dir + '/'+ timestr + 'input_train_test.pkl', 'wb') as input_file:
+                logger.info('Dumping processed input to pickle...')
+                pkl.dump((train_x1, train_x2, train_y, test_x1, test_x2, test_ids, word_index), input_file)
     else:
         with open(args.load_input_pkl, 'rb') as input_file:
             train_x1, train_x2, train_y, test_x1, test_x2, test_ids, word_index = pkl.load(input_file)
