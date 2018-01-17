@@ -16,8 +16,8 @@ from pandas import read_csv, DataFrame
 from util.utils import setLogger, mkdir, print_args
 from util.data_processing import get_pdTable, text_cleaner, embdReader, tokenizeIt, csv_processing
 from util.my_layers import DenseWithMasking, Conv1DWithMasking, MaxOverTime, MeanOverTime
-from util.model_eval import PlotPic
-from src.lm_1b_model import lm_1b_infer
+from util.model_eval import PlotPic, TrainLogger
+# from src.lm_1b_model import lm_1b_infer
 
 from keras.models import model_from_json
 from keras.preprocessing.text import Tokenizer
@@ -47,7 +47,10 @@ def train(args):
         # train_question1, train_question2, train_y = csv_processing(args.train_path)
         logger.info('Train csv: %d line loaded ' % len(train_question1))
         logger.info('Loading test file...')
-        test_ids, test_question1, test_question2 = get_pdTable(args.test_path, notag=True)
+        if args.predict_test:
+            test_ids, test_question1, test_question2 = get_pdTable(args.test_path, notag=True)
+        else:
+            test_ids, test_question1, test_question2, test_y = get_pdTable(args.test_path)
         # test_question1, test_question2, test_ids = csv_processing(args.test_path, test=True)
         logger.info('Test csv: %d line loaded ' % len(test_question1))
 
@@ -86,6 +89,9 @@ def train(args):
         test_x1 = pad_sequences(test_sequences_1, maxlen=inputLength)
         test_x2 = pad_sequences(test_sequences_2, maxlen=inputLength)
         test_ids = array(test_ids)
+        if not args.predict_test:
+            test_y = array(test_y)
+
         del sequences_1, sequences_2, test_sequences_1, test_sequences_2
         with open(output_dir + '/'+ timestr + 'input_train_test.pkl', 'wb') as input_file:
             logger.info('Dumping processed input to pickle...')
@@ -306,6 +312,8 @@ def train(args):
 
     # train and test model
     myCallbacks = []
+    train_logger = TrainLogger()
+    myCallbacks.append(train_logger)
 # 	if not args.predict_test:
 # 		if args.eval_on_epoch:
 # 			from util.model_eval import Evaluator
@@ -343,8 +351,8 @@ def train(args):
             for itm in tqdm(preds):
                 writer_sub.writerow([idx, itm])
                 idx += 1
-# 	elif not args.eval_on_epoch:
-# 		rnnmodel.evaluate(test_x, test_y, batch_size=args.eval_batch_size)
+    elif not args.eval_on_epoch:
+        rnnmodel.evaluate(test_x, test_y, batch_size=args.eval_batch_size)
 
     # test output (remove duplicate, remove <pad> <unk>, comparable layout, into csv)
     # final inference: output(remove duplicate, remove <pad> <unk>, limit output words to 3 or 2 or 1..., into csv)

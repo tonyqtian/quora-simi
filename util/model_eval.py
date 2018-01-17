@@ -4,9 +4,11 @@ Created on Mar 18, 2017
 @author: tonyq
 '''
 import logging
+import six
+from collections import OrderedDict, Iterable
 from keras.callbacks import Callback
 import matplotlib.pyplot as plt
-from numpy import around, mean, equal, squeeze
+from numpy import around, mean, equal, squeeze, ndarray
 from random import randint
 
 logger = logging.getLogger(__name__)
@@ -157,3 +159,55 @@ class Evaluator(Callback):
         logger.info('[Test]  ')
         logger.info('[Test]  Best @ Epoch %i: Log Loss: %.4f' % (self.best_epoch, self.best_score))
         logger.info('[Test]  ')
+
+
+class TrainLogger(Callback):
+    """Callback that streams epoch results to a csv file.
+
+    Supports all values that can be represented as a string,
+    including 1D iterables such as np.ndarray.
+
+    # Example
+        ```python
+        csv_logger = CSVLogger('training.log')
+        model.fit(X_train, Y_train, callbacks=[csv_logger])
+        ```
+
+    # Arguments
+        filename: filename of the csv file, e.g. 'run/log.csv'.
+        separator: string used to separate elements in the csv file.
+        append: True: append if file exists (useful for continuing
+            training). False: overwrite existing file,
+    """
+
+    def __init__(self):
+        self.logger = logger
+        self.keys = None
+
+    def on_epoch_end(self, epoch, logs=None):
+        logs = logs or {}
+
+        def handle_value(k):
+            is_zero_dim_ndarray = isinstance(k, ndarray) and k.ndim == 0
+            if isinstance(k, six.string_types):
+                return k
+            elif isinstance(k, Iterable) and not is_zero_dim_ndarray:
+                return '"[%s]"' % (', '.join(map(str, k)))
+            else:
+                return k
+
+        if self.model.stop_training:
+            # We set NA so that csv parsers do not fail for this last epoch.
+            logs = dict([(k, logs[k]) if k in logs else (k, 'NA') for k in self.keys])
+
+        self.keys = sorted(logs.keys())
+
+        row_dict = OrderedDict({'epoch': epoch})
+        row_dict.update((key, handle_value(logs[key])) for key in self.keys)
+        outputlist = []
+        for ky, vl in row_dict.items():
+            if ky == 'epoch':
+                outputlist.append("%s %d" % (ky, vl))
+            else:
+                outputlist.append("%s %.2f%%" % (ky, vl*100))
+        self.logger.info("\n" + " | ".join(outputlist))
