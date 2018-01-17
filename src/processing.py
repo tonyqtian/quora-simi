@@ -117,9 +117,10 @@ def train(args):
             embdw2v, vocabReverseDict = embdReader(args.w2v, args.embd_dim, word_index, MAX_NB_WORDS,
                                                    fasttext_source=args.ft_src, ft_dim=args.ft_dim,
                                                    skip_header=args.skip_header, initializer=args.embd_init)
-            with open(output_dir + '/'+ timestr + 'embd_dump.' + str(args.embd_dim) + 'd.pkl', 'wb') as embd_file:
-                logger.info('Dumping word embedding to pickle...')
-                pkl.dump((embdw2v, vocabReverseDict), embd_file)
+            if args.save_model:
+                with open(output_dir + '/'+ timestr + 'embd_dump.' + str(args.embd_dim) + 'd.pkl', 'wb') as embd_file:
+                    logger.info('Dumping word embedding to pickle...')
+                    pkl.dump((embdw2v, vocabReverseDict), embd_file)
     else:
         embdw2v = None
 
@@ -298,12 +299,12 @@ def train(args):
     rnnmodel.compile(loss=args.loss, optimizer=optimizer, metrics=[myMetrics])
     rnnmodel.summary()
 
-    if args.save_model:
-        ## Plotting model
-        logger.info('Plotting model architecture')
-        plot_model(rnnmodel, to_file = output_dir + '/' + timestr + 'model_plot.png')
-        logger.info('  Done')
+    ## Plotting model
+    logger.info('Plotting model architecture')
+    plot_model(rnnmodel, to_file = output_dir + '/' + timestr + 'model_plot.png')
+    logger.info('  Done')
 
+    if args.save_model:
         ## Save model architecture
         logger.info('Saving model architecture')
         with open(output_dir + '/'+ timestr + 'model_config.json', 'w') as arch:
