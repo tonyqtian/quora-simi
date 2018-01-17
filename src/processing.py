@@ -353,7 +353,9 @@ def train(args):
                 writer_sub.writerow([idx, itm])
                 idx += 1
     elif not args.eval_on_epoch:
-        rnnmodel.evaluate(test_x, test_y, batch_size=args.eval_batch_size, verbose=1)
+        logger.info("Evaluating test set...")
+        test_result = rnnmodel.evaluate(test_x, test_y, batch_size=args.eval_batch_size, verbose=1)
+        logger.info(test_result)
 
     # test output (remove duplicate, remove <pad> <unk>, comparable layout, into csv)
     # final inference: output(remove duplicate, remove <pad> <unk>, limit output words to 3 or 2 or 1..., into csv)
