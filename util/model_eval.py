@@ -80,6 +80,7 @@ class Evaluator(Callback):
         self.test_loss, self.test_metric = model.evaluate(self.test_x, self.test_y, batch_size=self.batch_size)
         self.test_losses.append(self.test_loss)
         self.test_accs.append(self.test_metric)
+        self.print_info(epoch, self.test_loss, self.test_metric)
         if self.evl_pred:
             pred = model.predict(self.test_x, batch_size=self.batch_size)
             preds = squeeze(pred)
@@ -89,7 +90,6 @@ class Evaluator(Callback):
             idx = randint(0, len(self.test_y)//2 )
             self.print_pred([ self.test_x[0][idx:idx+self.evl_pred], self.test_x[1][idx:idx+self.evl_pred] ],
                          preds[idx:idx+self.evl_pred], self.test_y[idx:idx+self.evl_pred])
-            self.print_info(epoch, precision, self.test_loss, self.test_metric)
 
 # 			if self.save_model:
 # 				if self.test_loss < self.best_score:
@@ -146,8 +146,8 @@ class Evaluator(Callback):
             except ValueError:
                 logger.info('[Test]  True: %d  Pred %f ' % (real, pred) )
 
-    def print_info(self, epoch, precision, logloss, mse):
-        logger.info('[Test]  Epoch: %i  Precision: %.4f  Log Loss %.4f  MSE %.4f' % (epoch, precision, logloss, mse))
+    def print_info(self, epoch, logloss, acc):
+        logger.info('[Test]  Epoch: %i  Test Loss: %.4f  Test Accuracy: %.4f%%' % (epoch, logloss, 100*acc))
         logger.info('[Test]  ----------------------------------------------------- ')
 
     def print_best(self):
