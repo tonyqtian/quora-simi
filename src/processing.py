@@ -357,7 +357,7 @@ def train(args):
     elif not args.eval_on_epoch:
         logger.info("Evaluating test set...")
         tloss, tacc = rnnmodel.evaluate(test_x, test_y, batch_size=args.eval_batch_size, verbose=1)
-        logger.info("Test loss: %.4f   Test Acc: %.2f%%" % (tloss, 100*tacc))
+        logger.info("Test loss: %.4f   Test Accuracy: %.2f%%" % (tloss, 100*tacc))
 
     # test output (remove duplicate, remove <pad> <unk>, comparable layout, into csv)
     # final inference: output(remove duplicate, remove <pad> <unk>, limit output words to 3 or 2 or 1..., into csv)
@@ -512,7 +512,7 @@ def inference(args):
 
         logger.info("Evaluating test set...")
         tloss, tacc = rnnmodel.evaluate(test_x, test_y, batch_size=args.eval_batch_size, verbose=1)
-        logger.info("Test loss: %.4f   Test Acc: %.2f%%" % (tloss, 100*tacc))
+        logger.info("Test loss: %.4f   Test Accuracy: %.2f%%" % (tloss, 100*tacc))
 
     # raise NotImplementedError
     # timestr = time.strftime("%Y%m%d-%H%M%S-")
