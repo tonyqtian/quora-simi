@@ -119,7 +119,7 @@ def train(args):
                                                    fasttext_source=args.ft_src, ft_dim=args.ft_dim,
                                                    skip_header=args.skip_header, initializer=args.embd_init)
             if args.save_model:
-                with open(output_dir + '/'+ timestr + 'embd_dump.' + str(args.embd_dim) + 'd.pkl', 'wb') as embd_file:
+                with open(output_dir + '/'+ timestr + 'embd_dump.' + str(args.embd_dim+args.ft_dim) + 'd.pkl', 'wb') as embd_file:
                     logger.info('Dumping word embedding to pickle...')
                     pkl.dump((embdw2v, vocabReverseDict), embd_file)
     else:
@@ -477,6 +477,7 @@ def inference(args):
             for itm in tqdm(preds):
                 writer_sub.writerow([idx, itm])
                 idx += 1
+        logger.info('Predicted results written to file: %s' % (output_dir + '/'+ timestr + 'predict.csv'))
 
     # raise NotImplementedError
     # timestr = time.strftime("%Y%m%d-%H%M%S-")
