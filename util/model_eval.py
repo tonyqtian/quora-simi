@@ -51,6 +51,7 @@ class PlotPic(Callback):
         plt.savefig(self.out_dir + '/' + self.timestr + 'TrainAcc.png')
         plt.close()
 
+
 class Evaluator(Callback):
 
     def __init__(self, args, out_dir, timestr, metric, test_x, test_y, reVocab):
@@ -112,30 +113,18 @@ class Evaluator(Callback):
 
         plt.plot(training_epochs, self.losses, 'b', label='Train Loss')
         plt.plot(training_epochs, self.val_losses, 'g', label='Valid Loss')
+        plt.plot(training_epochs, self.test_losses, 'k', label='Test Loss')
         plt.legend()
         plt.xlabel('epochs')
-        plt.savefig(self.out_dir + '/' + self.timestr + 'TrainLoss.png')
+        plt.savefig(self.out_dir + '/' + self.timestr + 'TrainTestLoss.png')
         plt.close()
 
         plt.plot(training_epochs, self.accs, 'r.', label='Train Metric')
         plt.plot(training_epochs, self.val_accs, 'y.', label='Valid Metric')
-        plt.legend()
-        plt.xlabel('epochs')
-        plt.savefig(self.out_dir + '/' + self.timestr + 'TrainAcc.png')
-        plt.close()
-
-        plt.plot(training_epochs, self.test_losses, 'k', label='Test Loss')
-        plt.legend()
-        plt.xlabel('epochs')
-        plt.savefig(self.out_dir + '/' + self.timestr + 'TestLoss.png')
-        plt.close()
-
         plt.plot(training_epochs, self.test_accs, 'c.', label='Test Metric')
-        if self.evl_pred:
-            plt.plot(training_epochs, self.test_precisions, 'g.', label='Test Precision')
         plt.legend()
         plt.xlabel('epochs')
-        plt.savefig(self.out_dir + '/' + self.timestr + 'TestMetric.png')
+        plt.savefig(self.out_dir + '/' + self.timestr + 'TrainTestAcc.png')
         plt.close()
 
     def print_pred(self, infers, preds, reals):

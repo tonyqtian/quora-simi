@@ -317,18 +317,18 @@ def train(args):
     myCallbacks = []
     train_logger = TrainLogger()
     myCallbacks.append(train_logger)
-# 	if not args.predict_test:
-# 		if args.eval_on_epoch:
-# 			from util.model_eval import Evaluator
-# 			evl = Evaluator(args, output_dir, timestr, myMetrics, test_x, test_y, vocabReverseDict)
-# 			myCallbacks.append(evl)
+    if args.eval_on_epoch:
+        from util.model_eval import Evaluator
+        evl = Evaluator(args, output_dir, timestr, myMetrics, test_x, test_y, vocabReverseDict)
+        myCallbacks.append(evl)
     if args.save_model:
         bst_model_path = output_dir + '/' + timestr + 'best_model_weights.h5'
         model_checkpoint = ModelCheckpoint(bst_model_path, save_best_only=True, save_weights_only=True, verbose=1)
         myCallbacks.append(model_checkpoint)
     if args.plot:
-        plot_pic = PlotPic(args, output_dir, timestr, myMetrics)
-        myCallbacks.append(plot_pic)
+        if not args.eval_on_epoch:
+            plot_pic = PlotPic(args, output_dir, timestr, myMetrics)
+            myCallbacks.append(plot_pic)
     if args.earlystop:
         earlystop = EarlyStopping(patience = args.earlystop, verbose=1, mode='auto')
         myCallbacks.append(earlystop)
