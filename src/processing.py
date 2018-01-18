@@ -501,6 +501,15 @@ def inference(args):
                 idx += 1
         logger.info('Predicted results written to file: %s' % (output_dir + '/'+ timestr + 'predict.csv'))
     else:
+        if args.optimizer == 'rmsprop':
+            optimizer = RMSprop(lr=args.learning_rate)
+        else:
+            optimizer = args.optimizer
+
+        myMetrics = 'acc'  # 'binary_accuracy' # 'mse'
+        rnnmodel.compile(loss=args.loss, optimizer=optimizer, metrics=[myMetrics])
+        rnnmodel.summary()
+
         logger.info("Evaluating test set...")
         tloss, tacc = rnnmodel.evaluate(test_x, test_y, batch_size=args.eval_batch_size, verbose=1)
         logger.info("Test loss: %.4f   Test Acc: %.2f%%" % (tloss, 100*tacc))
