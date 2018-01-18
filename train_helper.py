@@ -12,8 +12,8 @@ from time import sleep
 #
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--train-path", dest="train_path", type=str, metavar='<str>', default='data/train_sample.csv', help="The path to the training set")
-parser.add_argument("--test-path", dest="test_path", type=str, metavar='<str>', default='data/test_sample.csv', help="The path to the test set")
+parser.add_argument("--train-path", dest="train_path", type=str, metavar='<str>', default='', help="The path to the training set")
+parser.add_argument("--test-path", dest="test_path", type=str, metavar='<str>', default='', help="The path to the test set")
 parser.add_argument("--train-feature-path", dest="train_feature_path", type=str, metavar='<str>', default='', help="The path to the train feature set")
 parser.add_argument("--test-feature-path", dest="test_feature_path", type=str, metavar='<str>', default='', help="The path to the test feature set")
 parser.add_argument("--feature-list", dest="feature_list", type=str, metavar='<str>', default='', help="Feature column list")

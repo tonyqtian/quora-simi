@@ -96,12 +96,13 @@ def train(args):
         if args.save_model:
             with open(output_dir + '/'+ timestr + 'input_train_test.pkl', 'wb') as input_file:
                 logger.info('Dumping processed input to pickle...')
-                pkl.dump((train_x1, train_x2, train_y, test_x1, test_x2, test_ids, word_index), input_file)
+                pkl.dump((train_x1, train_x2, train_y, test_x1, test_x2, test_ids, tokenizer), input_file)
     else:
         with open(args.load_input_pkl, 'rb') as input_file:
-            train_x1, train_x2, train_y, test_x1, test_x2, test_ids, word_index = pkl.load(input_file)
+            train_x1, train_x2, train_y, test_x1, test_x2, test_ids, tokenizer = pkl.load(input_file)
             logger.info('Shape of data tensor: (%d, %d)' % train_x1.shape)
             logger.info('Shape of label tensor: (%d, )' % train_y.shape)
+            word_index = tokenizer.word_index
         inputLength = 30
         logger.info('Reset max length to 30')
 
@@ -374,8 +375,29 @@ def inference(args):
         raise NotImplementedError('only support loading testing materials from pickle')
     else:
         with open(args.load_input_pkl, 'rb') as input_file:
-            train_x1, train_x2, train_y, test_x1, test_x2, test_ids, word_index = pkl.load(input_file)
+            train_x1, train_x2, train_y, test_x1, test_x2, test_ids, tokenizer = pkl.load(input_file)
             logger.info('Shape of test data tensor: (%d, %d)' % test_x1.shape)
+            word_index = tokenizer.word_index
+            logger.info('Loaded %s unique tokens' % len(word_index))
+
+    if not args.test_path == '':
+        if args.predict_test:
+            test_ids, test_question1, test_question2 = get_pdTable(args.test_path, notag=True)
+        else:
+            test_ids, test_question1, test_question2, test_y = get_pdTable(args.test_path)
+        test_question1, test_maxLen1 = text_cleaner(test_question1)
+        test_question2, test_maxLen2 = text_cleaner(test_question2)
+        inputLength = max(test_maxLen1, test_maxLen2)
+        logger.info('Max input length: %d ' % inputLength)
+        inputLength = 30
+        logger.info('Reset max length to 30')
+        test_sequences_1 = tokenizer.texts_to_sequences(test_question1)
+        test_sequences_2 = tokenizer.texts_to_sequences(test_question2)
+        test_x1 = pad_sequences(test_sequences_1, maxlen=inputLength)
+        test_x2 = pad_sequences(test_sequences_2, maxlen=inputLength)
+        test_ids = array(test_ids)
+        if not args.predict_test:
+            test_y = array(test_y)
 
     # Loading train features
     if not args.train_feature_path == '':
@@ -478,6 +500,10 @@ def inference(args):
                 writer_sub.writerow([idx, itm])
                 idx += 1
         logger.info('Predicted results written to file: %s' % (output_dir + '/'+ timestr + 'predict.csv'))
+    else:
+        logger.info("Evaluating test set...")
+        tloss, tacc = rnnmodel.evaluate(test_x, test_y, batch_size=args.eval_batch_size, verbose=1)
+        logger.info("Test loss: %.4f   Test Acc: %.2f%%" % (tloss, 100*tacc))
 
     # raise NotImplementedError
     # timestr = time.strftime("%Y%m%d-%H%M%S-")
