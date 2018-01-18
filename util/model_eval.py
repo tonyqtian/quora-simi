@@ -207,4 +207,4 @@ class TrainLogger(Callback):
                 outputlist.append("%s %.2f%%" % (ky, vl*100))
             else:
                 outputlist.append("%s %.4f" % (ky, vl))
-        self.logger.info("\n" + " | ".join(outputlist))
+        self.logger.info(" | ".join(outputlist))
